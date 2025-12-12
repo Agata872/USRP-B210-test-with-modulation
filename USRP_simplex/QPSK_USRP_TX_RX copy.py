@@ -6,31 +6,47 @@
 #
 # GNU Radio Python Flow Graph
 # Title: QPSK_USRP_TX_RX
-# GNU Radio version: 3.10.10.0
+# GNU Radio version: 3.9.0.0
+
+from distutils.version import StrictVersion
+
+if __name__ == '__main__':
+    import ctypes
+    import sys
+    if sys.platform.startswith('linux'):
+        try:
+            x11 = ctypes.cdll.LoadLibrary('libX11.so')
+            x11.XInitThreads()
+        except:
+            print("Warning: failed to XInitThreads()")
 
 from PyQt5 import Qt
 from gnuradio import qtgui
-from PyQt5 import QtCore
+from gnuradio.filter import firdes
+import sip
 from gnuradio import blocks
 import numpy
 from gnuradio import channels
-from gnuradio.filter import firdes
 from gnuradio import digital
 from gnuradio import filter
 from gnuradio import gr
 from gnuradio.fft import window
 import sys
 import signal
-from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio import uhd
 import time
 from gnuradio.filter import pfb
-import sip
+from gnuradio.qtgui import Range, RangeWidget
+from PyQt5 import QtCore
+import TFMv1
+import TFMv5
 
 
+
+from gnuradio import qtgui
 
 class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
 
@@ -41,8 +57,8 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
-        except BaseException as exc:
-            print(f"Qt GUI: Could not set Icon: {str(exc)}", file=sys.stderr)
+        except:
+            pass
         self.top_scroll_layout = Qt.QVBoxLayout()
         self.setLayout(self.top_scroll_layout)
         self.top_scroll = Qt.QScrollArea()
@@ -58,41 +74,40 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
         self.settings = Qt.QSettings("GNU Radio", "QPSK_USRP_TX_RX")
 
         try:
-            geometry = self.settings.value("geometry")
-            if geometry:
-                self.restoreGeometry(geometry)
-        except BaseException as exc:
-            print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
+            if StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
+                self.restoreGeometry(self.settings.value("geometry").toByteArray())
+            else:
+                self.restoreGeometry(self.settings.value("geometry"))
+        except:
+            pass
 
         ##################################################
         # Variables
         ##################################################
-        self.d = d = 1/(2**(1/2))
         self.sps = sps = 2
-        self.qpsk_gray = qpsk_gray = digital.constellation_rect([d+d*1j, -d+d*1j,d-d*1j, -d-d*1j], [0, 1, 2, 3],
-        4, 2, 2, 1, 1).base()
         self.nfilts = nfilts = 32
         self.excess_bw = excess_bw = 0.95
-        self.eq_gain = eq_gain = 0.0001
-        self.variable_adaptive_algorithm_0 = variable_adaptive_algorithm_0 = digital.adaptive_algorithm_cma( qpsk_gray, eq_gain, 1).base()
+        self.d = d = 1/(2**(1/2))
         self.timing_loop_bw = timing_loop_bw = 6.28/200
         self.taps = taps = [0.85,0,0.526]
         self.samp_rate = samp_rate = 1e6
         self.rrc_taps_tx = rrc_taps_tx = firdes.root_raised_cosine(nfilts, nfilts, 1.0, excess_bw, 11*sps*nfilts)
         self.rrc_taps = rrc_taps = firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), excess_bw, 11*sps*nfilts)
+        self.qpsk_gray = qpsk_gray = digital.constellation_rect([d+d*1j, -d+d*1j,d-d*1j, -d-d*1j], [0, 1, 2, 3],
+        4, 2, 2, 1, 1).base()
         self.phase_bw = phase_bw = 6.28/200
         self.noise_volt = noise_volt = 0
         self.gain_tx = gain_tx = 30
         self.gain_rx = gain_rx = 30
         self.freq_offset = freq_offset = 0
-        self.freq = freq = 920e6
+        self.freq = freq = 800e6
+        self.eq_gain = eq_gain = 0.0001
         self.delay = delay = 56
         self.arity = arity = 4
 
         ##################################################
         # Blocks
         ##################################################
-
         self.controls = Qt.QTabWidget()
         self.controls_widget_0 = Qt.QWidget()
         self.controls_layout_0 = Qt.QBoxLayout(Qt.QBoxLayout.TopToBottom, self.controls_widget_0)
@@ -109,86 +124,55 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
-        self._timing_loop_bw_range = qtgui.Range(0.0, 0.1, 0.001, 6.28/200, 200)
-        self._timing_loop_bw_win = qtgui.RangeWidget(self._timing_loop_bw_range, self.set_timing_loop_bw, "timing_loop_bw", "counter_slider", float, QtCore.Qt.Horizontal)
+        self._timing_loop_bw_range = Range(0.0, 0.1, 0.001, 6.28/200, 200)
+        self._timing_loop_bw_win = RangeWidget(self._timing_loop_bw_range, self.set_timing_loop_bw, 'timing_loop_bw', "counter_slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_1.addWidget(self._timing_loop_bw_win, 0, 1, 1, 1)
         for r in range(0, 1):
             self.controls_grid_layout_1.setRowStretch(r, 1)
         for c in range(1, 2):
             self.controls_grid_layout_1.setColumnStretch(c, 1)
-        self._phase_bw_range = qtgui.Range(0.0, 0.1, 0.01, 6.28/200, 200)
-        self._phase_bw_win = qtgui.RangeWidget(self._phase_bw_range, self.set_phase_bw, "Phase: Bandwidth", "counter_slider", float, QtCore.Qt.Horizontal)
+        self._phase_bw_range = Range(0.0, 0.1, 0.01, 6.28/200, 200)
+        self._phase_bw_win = RangeWidget(self._phase_bw_range, self.set_phase_bw, 'Phase: Bandwidth', "counter_slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_1.addWidget(self._phase_bw_win, 1, 1, 1, 1)
         for r in range(1, 2):
             self.controls_grid_layout_1.setRowStretch(r, 1)
         for c in range(1, 2):
             self.controls_grid_layout_1.setColumnStretch(c, 1)
-        self._noise_volt_range = qtgui.Range(0, 2, 0.01, 0, 200)
-        self._noise_volt_win = qtgui.RangeWidget(self._noise_volt_range, self.set_noise_volt, "Noise Voltage", "counter_slider", float, QtCore.Qt.Horizontal)
+        self._noise_volt_range = Range(0, 2, 0.01, 0, 200)
+        self._noise_volt_win = RangeWidget(self._noise_volt_range, self.set_noise_volt, 'Noise Voltage', "counter_slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_0.addWidget(self._noise_volt_win, 1, 0, 1, 1)
         for r in range(1, 2):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(0, 1):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self._gain_tx_range = qtgui.Range(0, 74, 1, 30, 200)
-        self._gain_tx_win = qtgui.RangeWidget(self._gain_tx_range, self.set_gain_tx, "gain_tx", "counter_slider", float, QtCore.Qt.Horizontal)
+        self._gain_tx_range = Range(0, 74, 1, 30, 200)
+        self._gain_tx_win = RangeWidget(self._gain_tx_range, self.set_gain_tx, 'gain_tx', "counter_slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_0.addWidget(self._gain_tx_win, 0, 0, 1, 1)
         for r in range(0, 1):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(0, 1):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self._gain_rx_range = qtgui.Range(0, 74, 1, 30, 200)
-        self._gain_rx_win = qtgui.RangeWidget(self._gain_rx_range, self.set_gain_rx, "gain_rx", "counter_slider", float, QtCore.Qt.Horizontal)
+        self._gain_rx_range = Range(0, 74, 1, 30, 200)
+        self._gain_rx_win = RangeWidget(self._gain_rx_range, self.set_gain_rx, 'gain_rx', "counter_slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_1.addWidget(self._gain_rx_win, 0, 0, 1, 1)
         for r in range(0, 1):
             self.controls_grid_layout_1.setRowStretch(r, 1)
         for c in range(0, 1):
             self.controls_grid_layout_1.setColumnStretch(c, 1)
-        self._freq_offset_range = qtgui.Range(-0.1, 0.1, 0.001, 0, 200)
-        self._freq_offset_win = qtgui.RangeWidget(self._freq_offset_range, self.set_freq_offset, "Frequency Offset", "counter_slider", float, QtCore.Qt.Horizontal)
+        self._freq_offset_range = Range(-0.1, 0.1, 0.001, 0, 200)
+        self._freq_offset_win = RangeWidget(self._freq_offset_range, self.set_freq_offset, 'Frequency Offset', "counter_slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_0.addWidget(self._freq_offset_win, 1, 1, 1, 1)
         for r in range(1, 2):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(1, 2):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self._delay_range = qtgui.Range(0, 200, 1, 56, 200)
-        self._delay_win = qtgui.RangeWidget(self._delay_range, self.set_delay, "Delay", "counter_slider", int, QtCore.Qt.Horizontal)
+        self._delay_range = Range(0, 200, 1, 56, 200)
+        self._delay_win = RangeWidget(self._delay_range, self.set_delay, 'Delay', "counter_slider", int, QtCore.Qt.Horizontal)
         self.controls_grid_layout_0.addWidget(self._delay_win, 0, 1, 1, 1)
         for r in range(0, 1):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(1, 2):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self.uhd_usrp_source_0 = uhd.usrp_source(
-            ",".join(("serial=31D4A23", "")),
-            uhd.stream_args(
-                cpu_format="fc32",
-                args='',
-                channels=list(range(0,1)),
-            ),
-        )
-        self.uhd_usrp_source_0.set_samp_rate(samp_rate)
-        # No synchronization enforced.
-
-        self.uhd_usrp_source_0.set_center_freq(freq, 0)
-        self.uhd_usrp_source_0.set_antenna('TX/RX', 0)
-        self.uhd_usrp_source_0.set_gain(gain_rx, 0)
-        self.uhd_usrp_source_0.set_auto_dc_offset(False, 0)
-        self.uhd_usrp_source_0.set_auto_iq_balance(False, 0)
-        self.uhd_usrp_sink_0 = uhd.usrp_sink(
-            ",".join(("serial=31DB555", "")),
-            uhd.stream_args(
-                cpu_format="fc32",
-                args='',
-                channels=list(range(0,1)),
-            ),
-            '',
-        )
-        self.uhd_usrp_sink_0.set_samp_rate(samp_rate)
-        self.uhd_usrp_sink_0.set_time_unknown_pps(uhd.time_spec(0))
-
-        self.uhd_usrp_sink_0.set_center_freq(freq, 0)
-        self.uhd_usrp_sink_0.set_antenna("TX/RX", 0)
-        self.uhd_usrp_sink_0.set_gain(gain_tx, 0)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
             512, #size
             samp_rate, #samp_rate
@@ -235,7 +219,7 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
             self.qtgui_time_sink_x_0.set_line_marker(i, markers[i])
             self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
 
-        self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.qwidget(), Qt.QWidget)
+        self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.pyqwidget(), Qt.QWidget)
         self.top_grid_layout.addWidget(self._qtgui_time_sink_x_0_win, 2, 1, 1, 1)
         for r in range(2, 3):
             self.top_grid_layout.setRowStretch(r, 1)
@@ -254,7 +238,7 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
             None # parent
         )
         self.qtgui_sink_x_1_0.set_update_time(1.0/10)
-        self._qtgui_sink_x_1_0_win = sip.wrapinstance(self.qtgui_sink_x_1_0.qwidget(), Qt.QWidget)
+        self._qtgui_sink_x_1_0_win = sip.wrapinstance(self.qtgui_sink_x_1_0.pyqwidget(), Qt.QWidget)
 
         self.qtgui_sink_x_1_0.enable_rf_freq(False)
 
@@ -266,7 +250,7 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
         self.qtgui_sink_x_1 = qtgui.sink_c(
             1024, #fftsize
             window.WIN_BLACKMAN_hARRIS, #wintype
-            freq, #fc
+            0, #fc
             samp_rate, #bw
             "Tx_Signal", #name
             True, #plotfreq
@@ -276,7 +260,7 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
             None # parent
         )
         self.qtgui_sink_x_1.set_update_time(1.0/10)
-        self._qtgui_sink_x_1_win = sip.wrapinstance(self.qtgui_sink_x_1.qwidget(), Qt.QWidget)
+        self._qtgui_sink_x_1_win = sip.wrapinstance(self.qtgui_sink_x_1.pyqwidget(), Qt.QWidget)
 
         self.qtgui_sink_x_1.enable_rf_freq(False)
 
@@ -285,6 +269,89 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(0, 1):
             self.top_grid_layout.setColumnStretch(c, 1)
+        self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
+            1024, #size
+            "RX_Constellation", #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_const_sink_x_0.set_update_time(0.10)
+        self.qtgui_const_sink_x_0.set_y_axis(-2, 2)
+        self.qtgui_const_sink_x_0.set_x_axis(-2, 2)
+        self.qtgui_const_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, "")
+        self.qtgui_const_sink_x_0.enable_autoscale(False)
+        self.qtgui_const_sink_x_0.enable_grid(True)
+        self.qtgui_const_sink_x_0.enable_axis_labels(True)
+
+
+        labels = ['', '', '', '', '',
+            '', '', '', '', '']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ["blue", "red", "red", "red", "red",
+            "red", "red", "red", "red", "red"]
+        styles = [0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0]
+        markers = [0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0]
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+
+        for i in range(1):
+            if len(labels[i]) == 0:
+                self.qtgui_const_sink_x_0.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_const_sink_x_0.set_line_label(i, labels[i])
+            self.qtgui_const_sink_x_0.set_line_width(i, widths[i])
+            self.qtgui_const_sink_x_0.set_line_color(i, colors[i])
+            self.qtgui_const_sink_x_0.set_line_style(i, styles[i])
+            self.qtgui_const_sink_x_0.set_line_marker(i, markers[i])
+            self.qtgui_const_sink_x_0.set_line_alpha(i, alphas[i])
+
+        self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.pyqwidget(), Qt.QWidget)
+        self.top_grid_layout.addWidget(self._qtgui_const_sink_x_0_win, 2, 0, 1, 1)
+        for r in range(2, 3):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.top_grid_layout.setColumnStretch(c, 1)
+        self._eq_gain_range = Range(0.0, 0.001, 0.0001, 0.0001, 200)
+        self._eq_gain_win = RangeWidget(self._eq_gain_range, self.set_eq_gain, 'Equalizer: rate', "counter_slider", float, QtCore.Qt.Horizontal)
+        self.controls_grid_layout_1.addWidget(self._eq_gain_win, 1, 0, 1, 1)
+        for r in range(1, 2):
+            self.controls_grid_layout_1.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.controls_grid_layout_1.setColumnStretch(c, 1)
+        self.uhd_usrp_source_0 = uhd.usrp_source(
+            ",".join(("serial=30F9A6B", "")),
+            uhd.stream_args(
+                cpu_format="fc32",
+                args='',
+                channels=list(range(0,1)),
+            ),
+        )
+        self.uhd_usrp_source_0.set_samp_rate(samp_rate)
+        # No synchronization enforced.
+
+        self.uhd_usrp_source_0.set_center_freq(freq, 0)
+        self.uhd_usrp_source_0.set_antenna('TX/RX', 0)
+        self.uhd_usrp_source_0.set_gain(gain_rx, 0)
+        self.uhd_usrp_source_0.set_auto_dc_offset(False, 0)
+        self.uhd_usrp_source_0.set_auto_iq_balance(False, 0)
+        self.uhd_usrp_sink_0 = uhd.usrp_sink(
+            ",".join(("serial=30F9A69", "")),
+            uhd.stream_args(
+                cpu_format="fc32",
+                args='',
+                channels=list(range(0,1)),
+            ),
+            '',
+        )
+        self.uhd_usrp_sink_0.set_samp_rate(samp_rate)
+        self.uhd_usrp_sink_0.set_time_unknown_pps(uhd.time_spec(0))
+
+        self.uhd_usrp_sink_0.set_center_freq(freq, 0)
+        self.uhd_usrp_sink_0.set_antenna("TX/RX", 0)
+        self.uhd_usrp_sink_0.set_gain(gain_tx, 0)
         self.qtgui_number_sink_0 = qtgui.number_sink(
             gr.sizeof_float,
             0,
@@ -316,66 +383,13 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
             self.qtgui_number_sink_0.set_factor(i, factor[i])
 
         self.qtgui_number_sink_0.enable_autoscale(False)
-        self._qtgui_number_sink_0_win = sip.wrapinstance(self.qtgui_number_sink_0.qwidget(), Qt.QWidget)
+        self._qtgui_number_sink_0_win = sip.wrapinstance(self.qtgui_number_sink_0.pyqwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_number_sink_0_win)
-        self.qtgui_const_sink_x_0 = qtgui.const_sink_c(
-            1024, #size
-            "RX_Constellation", #name
-            1, #number of inputs
-            None # parent
-        )
-        self.qtgui_const_sink_x_0.set_update_time(0.10)
-        self.qtgui_const_sink_x_0.set_y_axis((-2), 2)
-        self.qtgui_const_sink_x_0.set_x_axis((-2), 2)
-        self.qtgui_const_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, "")
-        self.qtgui_const_sink_x_0.enable_autoscale(False)
-        self.qtgui_const_sink_x_0.enable_grid(True)
-        self.qtgui_const_sink_x_0.enable_axis_labels(True)
-
-
-        labels = ['', '', '', '', '',
-            '', '', '', '', '']
-        widths = [1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1]
-        colors = ["blue", "red", "red", "red", "red",
-            "red", "red", "red", "red", "red"]
-        styles = [0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0]
-        markers = [0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0]
-        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
-            1.0, 1.0, 1.0, 1.0, 1.0]
-
-        for i in range(1):
-            if len(labels[i]) == 0:
-                self.qtgui_const_sink_x_0.set_line_label(i, "Data {0}".format(i))
-            else:
-                self.qtgui_const_sink_x_0.set_line_label(i, labels[i])
-            self.qtgui_const_sink_x_0.set_line_width(i, widths[i])
-            self.qtgui_const_sink_x_0.set_line_color(i, colors[i])
-            self.qtgui_const_sink_x_0.set_line_style(i, styles[i])
-            self.qtgui_const_sink_x_0.set_line_marker(i, markers[i])
-            self.qtgui_const_sink_x_0.set_line_alpha(i, alphas[i])
-
-        self._qtgui_const_sink_x_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0.qwidget(), Qt.QWidget)
-        self.top_grid_layout.addWidget(self._qtgui_const_sink_x_0_win, 2, 0, 1, 1)
-        for r in range(2, 3):
-            self.top_grid_layout.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.top_grid_layout.setColumnStretch(c, 1)
         self.pfb_arb_resampler_xxx_0 = pfb.arb_resampler_ccf(
             sps,
             taps=rrc_taps_tx,
-            flt_size=nfilts,
-            atten=100)
+            flt_size=nfilts)
         self.pfb_arb_resampler_xxx_0.declare_sample_delay(0)
-        self._eq_gain_range = qtgui.Range(0.0, 0.001, 0.0001, 0.0001, 200)
-        self._eq_gain_win = qtgui.RangeWidget(self._eq_gain_range, self.set_eq_gain, "Equalizer: rate", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.controls_grid_layout_1.addWidget(self._eq_gain_win, 1, 0, 1, 1)
-        for r in range(1, 2):
-            self.controls_grid_layout_1.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.controls_grid_layout_1.setColumnStretch(c, 1)
         self.digital_symbol_sync_xx_0 = digital.symbol_sync_cc(
             digital.TED_SIGNAL_TIMES_SLOPE_ML,
             sps,
@@ -388,11 +402,11 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
             digital.IR_PFB_MF,
             nfilts,
             rrc_taps)
-        self.digital_linear_equalizer_0 = digital.linear_equalizer(15, 2, variable_adaptive_algorithm_0, True, [ ], 'corr_est')
-        self.digital_diff_encoder_bb_0 = digital.diff_encoder_bb(4, digital.DIFF_DIFFERENTIAL)
-        self.digital_diff_decoder_bb_0_0 = digital.diff_decoder_bb(4, digital.DIFF_DIFFERENTIAL)
+        self.digital_diff_encoder_bb_0 = digital.diff_encoder_bb(4)
+        self.digital_diff_decoder_bb_0_0 = digital.diff_decoder_bb(4)
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(phase_bw, arity, False)
         self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(qpsk_gray.base())
+        self.digital_cma_equalizer_cc_0 = digital.cma_equalizer_cc(15, 1, 0.0002, 2)
         self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bc(qpsk_gray.points(), 1)
         self.channels_channel_model_0 = channels.channel_model(
             noise_voltage=noise_volt,
@@ -412,11 +426,15 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
         self.blocks_char_to_float_0_0_0 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0_0 = blocks.char_to_float(1, 1)
         self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 256, 10000000))), True)
+        self.TFMv5_dispersion_probe_0_1_0_0 = TFMv5.dispersion_probe(1, samp_rate/2, 0, 0.001, 0.003, 0.006, 0.01)
+        self.TFMv1_energy_scale_0 = TFMv1.energy_scale(1, 1e6, 12)
+
 
 
         ##################################################
         # Connections
         ##################################################
+        self.connect((self.TFMv1_energy_scale_0, 0), (self.digital_symbol_sync_xx_0, 0))
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_packed_to_unpacked_xx_0, 0))
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_unpack_k_bits_bb_0_0, 0))
         self.connect((self.blocks_char_to_float_0_0, 0), (self.qtgui_time_sink_x_0, 0))
@@ -430,17 +448,18 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_unpack_k_bits_bb_0_0, 0), (self.blocks_delay_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.blocks_multiply_const_vxx_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
+        self.connect((self.digital_cma_equalizer_cc_0, 0), (self.digital_costas_loop_cc_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_diff_decoder_bb_0_0, 0))
+        self.connect((self.digital_costas_loop_cc_0, 0), (self.TFMv5_dispersion_probe_0_1_0_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_constellation_decoder_cb_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.qtgui_const_sink_x_0, 0))
         self.connect((self.digital_diff_decoder_bb_0_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))
         self.connect((self.digital_diff_encoder_bb_0, 0), (self.digital_chunks_to_symbols_xx_0, 0))
-        self.connect((self.digital_linear_equalizer_0, 0), (self.digital_costas_loop_cc_0, 0))
-        self.connect((self.digital_symbol_sync_xx_0, 0), (self.digital_linear_equalizer_0, 0))
+        self.connect((self.digital_symbol_sync_xx_0, 0), (self.digital_cma_equalizer_cc_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.channels_channel_model_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.qtgui_sink_x_1, 0))
+        self.connect((self.uhd_usrp_source_0, 0), (self.TFMv1_energy_scale_0, 0))
         self.connect((self.uhd_usrp_source_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
-        self.connect((self.uhd_usrp_source_0, 0), (self.digital_symbol_sync_xx_0, 0))
         self.connect((self.uhd_usrp_source_0, 0), (self.qtgui_sink_x_1_0, 0))
 
 
@@ -452,12 +471,6 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
 
         event.accept()
 
-    def get_d(self):
-        return self.d
-
-    def set_d(self, d):
-        self.d = d
-
     def get_sps(self):
         return self.sps
 
@@ -465,14 +478,7 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
         self.sps = sps
         self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), self.excess_bw, 11*self.sps*self.nfilts))
         self.set_rrc_taps_tx(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0, self.excess_bw, 11*self.sps*self.nfilts))
-        self.digital_symbol_sync_xx_0.set_sps(self.sps)
         self.pfb_arb_resampler_xxx_0.set_rate(self.sps)
-
-    def get_qpsk_gray(self):
-        return self.qpsk_gray
-
-    def set_qpsk_gray(self, qpsk_gray):
-        self.qpsk_gray = qpsk_gray
 
     def get_nfilts(self):
         return self.nfilts
@@ -490,17 +496,11 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
         self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), self.excess_bw, 11*self.sps*self.nfilts))
         self.set_rrc_taps_tx(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0, self.excess_bw, 11*self.sps*self.nfilts))
 
-    def get_eq_gain(self):
-        return self.eq_gain
+    def get_d(self):
+        return self.d
 
-    def set_eq_gain(self, eq_gain):
-        self.eq_gain = eq_gain
-
-    def get_variable_adaptive_algorithm_0(self):
-        return self.variable_adaptive_algorithm_0
-
-    def set_variable_adaptive_algorithm_0(self, variable_adaptive_algorithm_0):
-        self.variable_adaptive_algorithm_0 = variable_adaptive_algorithm_0
+    def set_d(self, d):
+        self.d = d
 
     def get_timing_loop_bw(self):
         return self.timing_loop_bw
@@ -521,7 +521,7 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.qtgui_sink_x_1.set_frequency_range(self.freq, self.samp_rate)
+        self.qtgui_sink_x_1.set_frequency_range(0, self.samp_rate)
         self.qtgui_sink_x_1_0.set_frequency_range(0, self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
         self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
@@ -539,6 +539,12 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
 
     def set_rrc_taps(self, rrc_taps):
         self.rrc_taps = rrc_taps
+
+    def get_qpsk_gray(self):
+        return self.qpsk_gray
+
+    def set_qpsk_gray(self, qpsk_gray):
+        self.qpsk_gray = qpsk_gray
 
     def get_phase_bw(self):
         return self.phase_bw
@@ -580,16 +586,21 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
 
     def set_freq(self, freq):
         self.freq = freq
-        self.qtgui_sink_x_1.set_frequency_range(self.freq, self.samp_rate)
         self.uhd_usrp_sink_0.set_center_freq(self.freq, 0)
         self.uhd_usrp_source_0.set_center_freq(self.freq, 0)
+
+    def get_eq_gain(self):
+        return self.eq_gain
+
+    def set_eq_gain(self, eq_gain):
+        self.eq_gain = eq_gain
 
     def get_delay(self):
         return self.delay
 
     def set_delay(self, delay):
         self.delay = delay
-        self.blocks_delay_0.set_dly(int(self.delay))
+        self.blocks_delay_0.set_dly(self.delay)
 
     def get_arity(self):
         return self.arity
@@ -602,6 +613,9 @@ class QPSK_USRP_TX_RX(gr.top_block, Qt.QWidget):
 
 def main(top_block_cls=QPSK_USRP_TX_RX, options=None):
 
+    if StrictVersion("4.5.0") <= StrictVersion(Qt.qVersion()) < StrictVersion("5.0.0"):
+        style = gr.prefs().get_string('qtgui', 'style', 'raster')
+        Qt.QApplication.setGraphicsSystem(style)
     qapp = Qt.QApplication(sys.argv)
 
     tb = top_block_cls()

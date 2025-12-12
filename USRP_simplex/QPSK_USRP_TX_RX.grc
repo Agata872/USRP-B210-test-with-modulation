@@ -23,6 +23,7 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: QPSK_USRP_TX_RX
+    window_size: (1000,1000)
   states:
     bus_sink: false
     bus_source: false
@@ -114,7 +115,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 800e6
+    value: 920e6
   states:
     bus_sink: false
     bus_source: false
@@ -316,7 +317,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1296, 364.0]
+    coordinate: [1296, 344.0]
     rotation: 0
     state: true
 - name: timing_loop_bw
@@ -340,44 +341,21 @@ blocks:
     coordinate: [632, 796.0]
     rotation: 0
     state: enabled
-- name: TFMv1_energy_scale_0
-  id: TFMv1_energy_scale
+- name: variable_adaptive_algorithm_0
+  id: variable_adaptive_algorithm
   parameters:
-    affinity: ''
-    alias: ''
     comment: ''
-    eav: '1'
-    init_scale: '12'
-    length: 1e6
-    maxoutbuf: '0'
-    minoutbuf: '0'
+    cons: qpsk_gray
+    delta: '10.0'
+    ffactor: '0.99'
+    modulus: '1'
+    step_size: eq_gain
+    type: cma
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [288, 676.0]
-    rotation: 0
-    state: true
-- name: TFMv5_dispersion_probe_0_1_0_0
-  id: TFMv5_dispersion_probe
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    constellation: '1'
-    length: samp_rate/2
-    length_init: '0'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    th1: '0.001'
-    th2: '0.003'
-    th3: '0.006'
-    th4: '0.01'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1296, 452.0]
+    coordinate: [1928, 528.0]
     rotation: 0
     state: enabled
 - name: analog_random_source_x_0
@@ -460,6 +438,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_ports: '1'
+    showports: 'False'
     type: byte
     vlen: '1'
   states:
@@ -486,7 +465,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [456, 468.0]
+    coordinate: [256, 400.0]
     rotation: 0
     state: true
 - name: blocks_multiply_const_vxx_0
@@ -650,25 +629,6 @@ blocks:
     coordinate: [599, 256]
     rotation: 0
     state: enabled
-- name: digital_cma_equalizer_cc_0
-  id: digital_cma_equalizer_cc
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    modulus: '1'
-    mu: '0.0002'
-    num_taps: '15'
-    sps: '2'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [874, 605]
-    rotation: 0
-    state: enabled
 - name: digital_constellation_decoder_cb_0
   id: digital_constellation_decoder_cb
   parameters:
@@ -700,7 +660,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1173, 593]
+    coordinate: [1216, 628.0]
     rotation: 0
     state: enabled
 - name: digital_diff_decoder_bb_0_0
@@ -708,6 +668,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    coding: digital.DIFF_DIFFERENTIAL
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -724,6 +685,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    coding: digital.DIFF_DIFFERENTIAL
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -733,6 +695,27 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [400, 252.0]
+    rotation: 0
+    state: enabled
+- name: digital_linear_equalizer_0
+  id: digital_linear_equalizer
+  parameters:
+    adapt_after_training: 'True'
+    affinity: ''
+    alg: variable_adaptive_algorithm_0
+    alias: ''
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    num_taps: '15'
+    sps: '2'
+    training_sequence: '[ ]'
+    training_start_tag: corr_est
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [872, 580.0]
     rotation: 0
     state: enabled
 - name: digital_pfb_clock_sync_xxx_0
@@ -755,7 +738,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 644]
+    coordinate: [536, 624.0]
     rotation: 0
     state: disabled
 - name: digital_symbol_sync_xx_0
@@ -782,7 +765,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [480, 596.0]
+    coordinate: [608, 364.0]
     rotation: 0
     state: enabled
 - name: pfb_arb_resampler_xxx_0
@@ -895,7 +878,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1511, 615]
+    coordinate: [1704, 668.0]
     rotation: 0
     state: enabled
 - name: qtgui_number_sink_0
@@ -958,7 +941,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [656, 476.0]
+    coordinate: [480, 312.0]
     rotation: 0
     state: true
 - name: qtgui_sink_x_1
@@ -968,7 +951,7 @@ blocks:
     alias: ''
     bw: samp_rate
     comment: ''
-    fc: '0'
+    fc: freq
     fftsize: '1024'
     gui_hint: 1,0,1,1
     maxoutbuf: '0'
@@ -1016,7 +999,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [280, 788.0]
+    coordinate: [336, 828.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0
@@ -1227,7 +1210,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"serial=30F9A69"'
+    dev_addr: '"serial=31DB555"'
     dev_args: '""'
     gain0: gain_tx
     gain1: '0'
@@ -1568,7 +1551,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"serial=30F9A6B"'
+    dev_addr: '"serial=31D4A23"'
     dev_args: '""'
     gain0: gain_rx
     gain1: '0'
@@ -1826,13 +1809,11 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 636.0]
+    coordinate: [72, 600.0]
     rotation: 0
     state: enabled
 
 connections:
-- [TFMv1_energy_scale_0, '0', digital_pfb_clock_sync_xxx_0, '0']
-- [TFMv1_energy_scale_0, '0', digital_symbol_sync_xx_0, '0']
 - [analog_random_source_x_0, '0', blocks_packed_to_unpacked_xx_0, '0']
 - [analog_random_source_x_0, '0', blocks_unpack_k_bits_bb_0_0, '0']
 - [blocks_char_to_float_0_0, '0', qtgui_time_sink_x_0, '0']
@@ -1846,20 +1827,21 @@ connections:
 - [blocks_unpack_k_bits_bb_0_0, '0', blocks_delay_0, '0']
 - [channels_channel_model_0, '0', blocks_multiply_const_vxx_0, '0']
 - [digital_chunks_to_symbols_xx_0, '0', pfb_arb_resampler_xxx_0, '0']
-- [digital_cma_equalizer_cc_0, '0', digital_costas_loop_cc_0, '0']
 - [digital_constellation_decoder_cb_0, '0', digital_diff_decoder_bb_0_0, '0']
-- [digital_costas_loop_cc_0, '0', TFMv5_dispersion_probe_0_1_0_0, '0']
 - [digital_costas_loop_cc_0, '0', digital_constellation_decoder_cb_0, '0']
 - [digital_costas_loop_cc_0, '0', qtgui_const_sink_x_0, '0']
 - [digital_diff_decoder_bb_0_0, '0', blocks_unpack_k_bits_bb_0, '0']
 - [digital_diff_encoder_bb_0, '0', digital_chunks_to_symbols_xx_0, '0']
-- [digital_pfb_clock_sync_xxx_0, '0', digital_cma_equalizer_cc_0, '0']
-- [digital_symbol_sync_xx_0, '0', digital_cma_equalizer_cc_0, '0']
+- [digital_linear_equalizer_0, '0', digital_costas_loop_cc_0, '0']
+- [digital_pfb_clock_sync_xxx_0, '0', digital_linear_equalizer_0, '0']
+- [digital_symbol_sync_xx_0, '0', digital_linear_equalizer_0, '0']
 - [pfb_arb_resampler_xxx_0, '0', channels_channel_model_0, '0']
 - [pfb_arb_resampler_xxx_0, '0', qtgui_sink_x_1, '0']
-- [uhd_usrp_source_0, '0', TFMv1_energy_scale_0, '0']
 - [uhd_usrp_source_0, '0', blocks_complex_to_mag_squared_0, '0']
+- [uhd_usrp_source_0, '0', digital_pfb_clock_sync_xxx_0, '0']
+- [uhd_usrp_source_0, '0', digital_symbol_sync_xx_0, '0']
 - [uhd_usrp_source_0, '0', qtgui_sink_x_1_0, '0']
 
 metadata:
   file_format: 1
+  grc_version: 3.10.10.0
