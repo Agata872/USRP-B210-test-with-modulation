@@ -1,24 +1,39 @@
-# URSI_2020
-Mock-up digital communication system based on the use of USRP over Linux
+# USRP B210 QPSK / 64-QAM Modem (GNU Radio 3.10 + UHD 4.8)
 
-## About this repo
-This is the GNU Radio out-of-tree module and the grc and Python files for the paper presented in the National (Spain) URSI Congress: "Mock-up digital communication system based on the use of USRP over Linux". The code has been updated inn 2022. It includes:
-* Schemes with one Tx and one Rx with BPSK 8-PSK, QPSK, 16-QAM, 64-QAM and 256. 
-* The most common effects in a mobile channel such as Doppler Effect, multipath or fast fading are considered. Time/symbol synchronization, channel equalization (although just blind equalizers are used) and adaptive decision boundaries are implemented.
-* Control panel to modify the channel interference in real-time (noise, multipath, clock sync and Doppler effect) and visualise the effects in the received constellation. The configuration parameters of both Tx and Rx can also be modified in real-time. For example, carrier frequency, Tx gain, Rx gain, equalizer factor, etc.
+This repository provides a GNU Radio–based implementation of **QPSK** and **64-QAM** modulation and demodulation using **USRP B210**.  
+The project is adapted and extended from the original URSI 2020 repository:
 
-## Pre-requisites
-GNU Radio 3.9. Two USRP B210 were used for development and testing, although this work can be implemented with any full-duplex USRP model with no changes, and even with any other Software Defined Radio device GNU-Radio-compatible with few modifications.
+👉 Original repository: https://github.com/alvpr/URSI_2020.git
 
-For installation of the out-of-tree firs remove the build folder:
+Compared with the original implementation, this version has been **updated to support newer GNU Radio and UHD releases**, and includes a **fully functional QPSK transceiver**, with **64-QAM currently under testing**.
 
-```console
-$ cd gr-TFMv5
-$ rm -r build
-$ mkdir build
-$ cd build
-$ cmake ../
-$ make
-$ sudo ldconfig
-```
-For more info: https://wiki.gnuradio.org/index.php/OutOfTreeModules
+---
+
+## 📌 Features
+
+- ✅ USRP B210–based SDR implementation
+- ✅ GNU Radio **3.10** compatible
+- ✅ UHD **4.8** compatible
+- ✅ End-to-end **QPSK modulation and demodulation**
+- 🚧 **64-QAM modulation/demodulation (work in progress)**
+- ✅ GNU Radio Companion (`.grc`) flowgraphs
+- ✅ Python control scripts for TX/RX
+
+---
+
+## 🔧 Environment & Requirements
+
+### Hardware
+- USRP B210
+- Suitable RF front-end (antennas, cables, etc.)
+
+### Software
+- Ubuntu (tested on recent LTS versions)
+- GNU Radio **3.10**
+- UHD **4.8**
+- Python 3.x
+- USRP Hardware Driver properly installed and detected
+
+To verify your USRP:
+```bash
+uhd_find_devices
