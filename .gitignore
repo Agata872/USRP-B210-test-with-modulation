@@ -1,0 +1,9 @@
+# JetBrains IDE
+.idea/
+*.iml
+
+# Copilot / IDE migration junk
+copilot.data.migration*.xml
+
+# Optional: IDE specific
+*.iws
