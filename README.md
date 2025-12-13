@@ -21,12 +21,12 @@ Compared with the original implementation, this version has been **updated to su
 
 ---
 ## 📂 Project Structure
-.
+```
 ├── Updated_config/                # GNU Radio Companion flowgraphs
 │   ├── QPSK/                       # QPSK modulation and demodulation
 │   ├── QAM64/                      # Under testing
 ├── README.md
-
+```
 ---
 ## 🔧 Environment & Requirements
 
