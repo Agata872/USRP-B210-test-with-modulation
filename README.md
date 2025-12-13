@@ -20,12 +20,21 @@ Compared with the original implementation, this version has been **updated to su
 - ✅ Python control scripts for TX/RX
 
 ---
+## 📂 Project Structure
+.
+├── Updated_config/                # GNU Radio Companion flowgraphs
+│   ├── QPSK/                       # QPSK modulation and demodulation
+│   ├── QAM64/                      # Under testing
+├── README.md
 
+---
 ## 🔧 Environment & Requirements
 
 ### Hardware
 - USRP B210
 - Suitable RF front-end (antennas, cables, etc.)
+
+---
 
 ### Software
 - Ubuntu (tested on recent LTS versions)
@@ -34,6 +43,7 @@ Compared with the original implementation, this version has been **updated to su
 - Python 3.x
 - USRP Hardware Driver properly installed and detected
 
-To verify your USRP:
-```bash
-uhd_find_devices
+---
+### 📖 References
+- Official QPSK Mod and Demod tutorial from the GNURadio wiki:
+https://wiki.gnuradio.org/index.php?title=QPSK_Mod_and_Demod
