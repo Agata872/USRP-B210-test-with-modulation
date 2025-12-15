@@ -45,27 +45,6 @@ blocks:
     coordinate: [976, 16.0]
     rotation: 0
     state: enabled
-- name: eq_gain
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    gui_hint: 'controls@1: 1,0,1,1'
-    label: 'Equalizer: rate'
-    min_len: '200'
-    orient: QtCore.Qt.Horizontal
-    rangeType: float
-    start: '0.0'
-    step: '0.0001'
-    stop: '0.001'
-    value: '0.0001'
-    widget: counter_slider
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2576, 16.0]
-    rotation: 0
-    state: enabled
 - name: excess_bw
   id: variable
   parameters:
@@ -103,66 +82,15 @@ blocks:
     rotation: 0
     state: enabled
 - name: freq_offset
-  id: variable_qtgui_range
+  id: variable
   parameters:
     comment: ''
-    gui_hint: 'controls@0: 1,1,1,1'
-    label: Frequency Offset
-    min_len: '200'
-    orient: QtCore.Qt.Horizontal
-    rangeType: float
-    start: '-0.1'
-    step: '0.001'
-    stop: '0.1'
     value: '0'
-    widget: counter_slider
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1584, 8.0]
-    rotation: 0
-    state: enabled
-- name: gain_rx
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    gui_hint: 'controls@1: 0,0,1,1'
-    label: gain_rx
-    min_len: '200'
-    orient: QtCore.Qt.Horizontal
-    rangeType: float
-    start: '0'
-    step: '1'
-    stop: '74'
-    value: '50'
-    widget: counter_slider
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1800, 8.0]
-    rotation: 0
-    state: enabled
-- name: gain_tx
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    gui_hint: 'controls@0: 0,0,1,1'
-    label: gain_tx
-    min_len: '200'
-    orient: QtCore.Qt.Horizontal
-    rangeType: float
-    start: '0'
-    step: '1'
-    stop: '74'
-    value: '50'
-    widget: counter_slider
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1968, 8.0]
+    coordinate: [1408, 16.0]
     rotation: 0
     state: enabled
 - name: nfilts
@@ -175,27 +103,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [680, 16.0]
-    rotation: 0
-    state: enabled
-- name: noise_volt
-  id: variable_qtgui_range
-  parameters:
-    comment: ''
-    gui_hint: 'controls@0: 1,0,1,1'
-    label: Noise Voltage
-    min_len: '200'
-    orient: QtCore.Qt.Horizontal
-    rangeType: float
-    start: '0'
-    step: '0.01'
-    stop: '2'
-    value: '0'
-    widget: counter_slider
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1408, 8.0]
     rotation: 0
     state: enabled
 - name: qpsk_mg
@@ -290,23 +197,6 @@ blocks:
     coordinate: [920, 496.0]
     rotation: 0
     state: enabled
-- name: variable_adaptive_algorithm_0
-  id: variable_adaptive_algorithm
-  parameters:
-    comment: ''
-    cons: qpsk_mg
-    delta: '10.0'
-    ffactor: '0.99'
-    modulus: '1'
-    step_size: eq_gain
-    type: cma
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2336, 8.0]
-    rotation: 0
-    state: enabled
 - name: analog_random_source_x_0
   id: analog_random_source_x
   parameters:
@@ -395,7 +285,7 @@ blocks:
     freq_offset: freq_offset
     maxoutbuf: '0'
     minoutbuf: '0'
-    noise_voltage: noise_volt
+    noise_voltage: '0'
     seed: '0'
     taps: '1'
   states:
@@ -403,40 +293,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1960, 312.0]
-    rotation: 0
-    state: enabled
-- name: controls
-  id: qtgui_tab_widget
-  parameters:
-    alias: ''
-    comment: ''
-    gui_hint: 0,0,1,2
-    label0: TX
-    label1: RX
-    label10: Tab 10
-    label11: Tab 11
-    label12: Tab 12
-    label13: Tab 13
-    label14: Tab 14
-    label15: Tab 15
-    label16: Tab 16
-    label17: Tab 17
-    label18: Tab 18
-    label19: Tab 19
-    label2: Tab 2
-    label3: Tab 3
-    label4: Tab 4
-    label5: Tab 5
-    label6: Tab 6
-    label7: Tab 7
-    label8: Tab 8
-    label9: Tab 9
-    num_tabs: '2'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2144, 8.0]
     rotation: 0
     state: enabled
 - name: digital_chunks_to_symbols_xx_0
@@ -512,35 +368,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [1280, 336.0]
-    rotation: 0
-    state: enabled
-- name: qtgui_sink_x_1
-  id: qtgui_sink_x
-  parameters:
-    affinity: ''
-    alias: ''
-    bw: samp_rate
-    comment: ''
-    fc: freq
-    fftsize: '1024'
-    gui_hint: 1,0,1,1
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    name: '"Tx_Signal"'
-    plotconst: 'True'
-    plotfreq: 'True'
-    plottime: 'True'
-    plotwaterfall: 'True'
-    rate: '10'
-    showports: 'True'
-    showrf: 'False'
-    type: complex
-    wintype: window.WIN_BLACKMAN_hARRIS
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [1640, 192.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_sink_0
@@ -656,7 +483,7 @@ blocks:
     comment: ''
     dev_addr: '"serial=31DB555"'
     dev_args: '""'
-    gain0: gain_tx
+    gain0: '50'
     gain1: '0'
     gain10: '0'
     gain11: '0'
@@ -803,7 +630,7 @@ blocks:
     start_time: '-1.0'
     stream_args: ''
     stream_chans: '[]'
-    sync: sync
+    sync: pc_clock
     time_source0: ''
     time_source1: ''
     time_source2: ''
@@ -820,19 +647,6 @@ blocks:
     coordinate: [2368, 296.0]
     rotation: 0
     state: enabled
-- name: virtual_sink_0
-  id: virtual_sink
-  parameters:
-    alias: ''
-    comment: ''
-    stream_id: Tx_samples
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2272, 160.0]
-    rotation: 0
-    state: true
 - name: zeromq_push_msg_sink_1
   id: zeromq_push_msg_sink
   parameters:
@@ -857,12 +671,10 @@ connections:
 - [blocks_stream_to_tagged_stream_0, '0', pdu_tagged_stream_to_pdu_0, '0']
 - [blocks_throttle_0, '0', channels_channel_model_0, '0']
 - [channels_channel_model_0, '0', uhd_usrp_sink_0, '0']
-- [channels_channel_model_0, '0', virtual_sink_0, '0']
 - [digital_chunks_to_symbols_xx_0, '0', pfb_arb_resampler_xxx_0, '0']
 - [digital_diff_encoder_bb_0, '0', digital_chunks_to_symbols_xx_0, '0']
 - [pdu_tagged_stream_to_pdu_0, pdus, zeromq_push_msg_sink_1, in]
 - [pfb_arb_resampler_xxx_0, '0', blocks_throttle_0, '0']
-- [pfb_arb_resampler_xxx_0, '0', qtgui_sink_x_1, '0']
 
 metadata:
   file_format: 1
