@@ -1,0 +1,161 @@
+options:
+  parameters:
+    author: Dramco_Tianzheng
+    catch_exceptions: 'True'
+    category: '[GRC Hier Blocks]'
+    cmake_opt: ''
+    comment: ''
+    copyright: ''
+    description: ''
+    gen_cmake: 'On'
+    gen_linking: dynamic
+    generate_options: qt_gui
+    hier_block_src_path: '.:'
+    id: Server
+    max_nouts: '0'
+    output_language: python
+    placement: (0,0)
+    qt_qss_theme: ''
+    realtime_scheduling: ''
+    run: 'True'
+    run_command: '{python} -u {filename}'
+    run_options: prompt
+    sizing_mode: fixed
+    thread_safe_setters: ''
+    title: Server_process
+    window_size: (1000,1000)
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [8, 8]
+    rotation: 0
+    state: enabled
+
+blocks:
+- name: epy_block_0
+  id: epy_block
+  parameters:
+    _source_code: "import numpy as np\nimport pmt\nfrom gnuradio import gr\nfrom collections\
+      \ import deque\n\n# ====== \u5173\u952E\uFF1A\u8BA9 GRC \u751F\u6210\u7AEF\u53E3\
+      \ ======\nin_sig = None\nout_sig = None\nin_msg = ['raw', 'dec']   # \u751F\u6210\
+      \u4E24\u4E2A message \u8F93\u5165\u7AEF\u53E3\uFF1Araw / dec\nout_msg = [] \
+      \             # \u4E0D\u9700\u8981\u8F93\u51FA\u7AEF\u53E3\uFF08\u4F60\u53EA\
+      \u505A\u6BD4\u8F83\u6253\u5370\uFF09\n# ===================================\n\
+      \nclass blk(gr.sync_block):\n    def __init__(self, print_every=50, max_pending=200):\n\
+      \        gr.sync_block.__init__(\n            self,\n            name=\"Message\
+      \ Comparator (PDU bits)\",\n            in_sig=None,\n            out_sig=None\n\
+      \        )\n\n        self.print_every = int(print_every)\n        self.max_pending\
+      \ = int(max_pending)\n\n        # message ports\uFF08\u7AEF\u53E3\u540D\u5FC5\
+      \u987B\u548C in_msg \u91CC\u4E00\u81F4\uFF09\n        self.message_port_register_in(pmt.intern(\"\
+      raw\"))\n        self.message_port_register_in(pmt.intern(\"dec\"))\n      \
+      \  self.set_msg_handler(pmt.intern(\"raw\"), self._handle_raw)\n        self.set_msg_handler(pmt.intern(\"\
+      dec\"), self._handle_dec)\n\n        self.raw_map = {}\n        self.dec_map\
+      \ = {}\n        self.raw_fifo = deque()\n        self.dec_fifo = deque()\n\n\
+      \        self.frames = 0\n        self.total_bits = 0\n        self.total_errs\
+      \ = 0\n        self.len_mismatch = 0\n\n    def _pdu_to_u8(self, msg):\n   \
+      \     if not pmt.is_pair(msg):\n            return None, None\n        meta\
+      \ = pmt.car(msg)\n        data = pmt.cdr(msg)\n        try:\n            vec\
+      \ = pmt.u8vector_elements(data)\n        except Exception:\n            return\
+      \ None, None\n\n        meta_dict = {}\n        if pmt.is_dict(meta):\n    \
+      \        try:\n                meta_dict = pmt.to_python(meta)\n           \
+      \ except Exception:\n                meta_dict = {}\n        return meta_dict,\
+      \ np.frombuffer(bytes(vec), dtype=np.uint8)\n\n    def _get_seq(self, meta_dict):\n\
+      \        for k in (\"seq\", \"frame_id\", \"pkt_id\", \"id\"):\n           \
+      \ if k in meta_dict:\n                try:\n                    return int(meta_dict[k])\n\
+      \                except Exception:\n                    return None\n      \
+      \  return None\n\n    def _compare_and_update(self, raw_bits, dec_bits, seq=None):\n\
+      \        n1, n2 = int(raw_bits.size), int(dec_bits.size)\n        if n1 != n2:\n\
+      \            self.len_mismatch += 1\n            n = min(n1, n2)\n         \
+      \   raw_bits = raw_bits[:n]\n            dec_bits = dec_bits[:n]\n        else:\n\
+      \            n = n1\n\n        errs = int(np.count_nonzero(raw_bits != dec_bits))\n\
+      \n        self.frames += 1\n        self.total_bits += n\n        self.total_errs\
+      \ += errs\n\n        if self.frames % self.print_every == 0:\n            ber\
+      \ = (self.total_errs / self.total_bits) if self.total_bits > 0 else 0.0\n  \
+      \          tag = f\"SEQ={seq} \" if seq is not None else \"\"\n            print(f\"\
+      [Comparator] {tag}frames={self.frames}, bits={self.total_bits}, \"\n       \
+      \           f\"errs={self.total_errs}, BER={ber:.6e}, len_mismatch={self.len_mismatch}\"\
+      )\n\n    def _trim_pending(self):\n        while len(self.raw_map) > self.max_pending:\n\
+      \            self.raw_map.pop(next(iter(self.raw_map)))\n        while len(self.dec_map)\
+      \ > self.max_pending:\n            self.dec_map.pop(next(iter(self.dec_map)))\n\
+      \        while len(self.raw_fifo) > self.max_pending:\n            self.raw_fifo.popleft()\n\
+      \        while len(self.dec_fifo) > self.max_pending:\n            self.dec_fifo.popleft()\n\
+      \n    def _handle_raw(self, msg):\n        meta, raw = self._pdu_to_u8(msg)\n\
+      \        if raw is None:\n            return\n        seq = self._get_seq(meta)\n\
+      \        if seq is not None:\n            self.raw_map[seq] = raw\n        \
+      \    if seq in self.dec_map:\n                dec = self.dec_map.pop(seq)\n\
+      \                raw2 = self.raw_map.pop(seq)\n                self._compare_and_update(raw2,\
+      \ dec, seq=seq)\n            self._trim_pending()\n        else:\n         \
+      \   self.raw_fifo.append(raw)\n            if len(self.dec_fifo) > 0:\n    \
+      \            dec = self.dec_fifo.popleft()\n                raw2 = self.raw_fifo.popleft()\n\
+      \                self._compare_and_update(raw2, dec)\n            self._trim_pending()\n\
+      \n    def _handle_dec(self, msg):\n        meta, dec = self._pdu_to_u8(msg)\n\
+      \        if dec is None:\n            return\n        seq = self._get_seq(meta)\n\
+      \        if seq is not None:\n            self.dec_map[seq] = dec\n        \
+      \    if seq in self.raw_map:\n                raw = self.raw_map.pop(seq)\n\
+      \                dec2 = self.dec_map.pop(seq)\n                self._compare_and_update(raw,\
+      \ dec2, seq=seq)\n            self._trim_pending()\n        else:\n        \
+      \    self.dec_fifo.append(dec)\n            if len(self.raw_fifo) > 0:\n   \
+      \             raw = self.raw_fifo.popleft()\n                dec2 = self.dec_fifo.popleft()\n\
+      \                self._compare_and_update(raw, dec2)\n            self._trim_pending()\n"
+    affinity: ''
+    alias: ''
+    comment: ''
+    max_pending: '200'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    print_every: '50'
+  states:
+    _io_cache: ('Message Comparator (PDU bits)', 'blk', [('print_every', '50'), ('max_pending',
+      '200')], [('dec', 'message', 1), ('raw', 'message', 1)], [], '', ['max_pending',
+      'print_every'])
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1064, 440.0]
+    rotation: 0
+    state: enabled
+- name: zeromq_pull_msg_source_0
+  id: zeromq_pull_msg_source
+  parameters:
+    address: tcp://*:5555
+    affinity: ''
+    alias: ''
+    bind: 'False'
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    timeout: '100'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [680, 512.0]
+    rotation: 0
+    state: enabled
+- name: zeromq_pull_msg_source_0_0
+  id: zeromq_pull_msg_source
+  parameters:
+    address: tcp://*:5556
+    affinity: ''
+    alias: ''
+    bind: 'False'
+    comment: ''
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    timeout: '100'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [680, 384.0]
+    rotation: 0
+    state: enabled
+
+connections:
+- [zeromq_pull_msg_source_0, out, epy_block_0, raw]
+- [zeromq_pull_msg_source_0_0, out, epy_block_0, dec]
+
+metadata:
+  file_format: 1
+  grc_version: 3.10.10.0
