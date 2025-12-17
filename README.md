@@ -43,6 +43,20 @@ Compared with the original implementation, this version has been **updated to su
 - Python 3.x
 - USRP Hardware Driver properly installed and detected
 
+---
+### Pre-requisites
+For installation of the out-of-tree firs remove the build folder:
+```
+cd gr-TFMv5
+rm -r build
+mkdir build
+cd build
+cmake ..
+make -j$(nproc)
+sudo make install
+sudo ldconfig
+```
+
 ## 🔍 QPSK Modulation and Decoding Process
 
 ---
