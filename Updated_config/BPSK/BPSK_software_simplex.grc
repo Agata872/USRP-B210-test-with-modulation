@@ -23,6 +23,7 @@ options:
     sizing_mode: fixed
     thread_safe_setters: ''
     title: BPSK_software_simplex
+    window_size: (1000,1000)
   states:
     bus_sink: false
     bus_source: false
@@ -356,6 +357,23 @@ blocks:
     coordinate: [632, 796.0]
     rotation: 0
     state: enabled
+- name: variable_adaptive_algorithm_0
+  id: variable_adaptive_algorithm
+  parameters:
+    comment: ''
+    cons: digital.constellation_bpsk().base()
+    delta: '10.0'
+    ffactor: '0.99'
+    modulus: '1'
+    step_size: eq_gain
+    type: cma
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1664, 40.0]
+    rotation: 0
+    state: enabled
 - name: analog_random_source_x_0
   id: analog_random_source_x
   parameters:
@@ -452,6 +470,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_ports: '1'
+    showports: 'False'
     type: byte
     vlen: '1'
   states:
@@ -626,25 +645,6 @@ blocks:
     coordinate: [600, 256]
     rotation: 0
     state: enabled
-- name: digital_cma_equalizer_cc_0
-  id: digital_cma_equalizer_cc
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    modulus: '1'
-    mu: '0.00002'
-    num_taps: '15'
-    sps: '2'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [904, 500.0]
-    rotation: 0
-    state: bypassed
 - name: digital_constellation_decoder_cb_0
   id: digital_constellation_decoder_cb
   parameters:
@@ -676,7 +676,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1031, 617]
+    coordinate: [1304, 620.0]
     rotation: 0
     state: enabled
 - name: digital_diff_decoder_bb_0_0
@@ -684,6 +684,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    coding: digital.DIFF_DIFFERENTIAL
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -700,6 +701,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    coding: digital.DIFF_DIFFERENTIAL
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -711,23 +713,25 @@ blocks:
     coordinate: [400, 252.0]
     rotation: 0
     state: enabled
-- name: digital_lms_dd_equalizer_cc_2
-  id: digital_lms_dd_equalizer_cc
+- name: digital_linear_equalizer_0
+  id: digital_linear_equalizer
   parameters:
+    adapt_after_training: 'True'
     affinity: ''
+    alg: variable_adaptive_algorithm_0
     alias: ''
-    cnst: digital.constellation_bpsk().base()
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    mu: eq_gain
     num_taps: '15'
     sps: '2'
+    training_sequence: '[ ]'
+    training_start_tag: corr_est
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [696, 612.0]
+    coordinate: [880, 628.0]
     rotation: 0
     state: enabled
 - name: digital_pfb_clock_sync_xxx_0
@@ -863,7 +867,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1256, 596.0]
+    coordinate: [1560, 604.0]
     rotation: 0
     state: enabled
 - name: qtgui_number_sink_0
@@ -1194,14 +1198,13 @@ connections:
 - [blocks_unpack_k_bits_bb_0_0, '0', blocks_delay_0, '0']
 - [channels_channel_model_0, '0', virtual_sink_0, '0']
 - [digital_chunks_to_symbols_xx_0, '0', pfb_arb_resampler_xxx_0, '0']
-- [digital_cma_equalizer_cc_0, '0', digital_costas_loop_cc_0, '0']
 - [digital_constellation_decoder_cb_0, '0', digital_diff_decoder_bb_0_0, '0']
 - [digital_costas_loop_cc_0, '0', digital_constellation_decoder_cb_0, '0']
 - [digital_costas_loop_cc_0, '0', qtgui_const_sink_x_0, '0']
 - [digital_diff_decoder_bb_0_0, '0', blocks_unpack_k_bits_bb_0, '0']
 - [digital_diff_encoder_bb_0, '0', digital_chunks_to_symbols_xx_0, '0']
-- [digital_lms_dd_equalizer_cc_2, '0', digital_cma_equalizer_cc_0, '0']
-- [digital_pfb_clock_sync_xxx_0, '0', digital_lms_dd_equalizer_cc_2, '0']
+- [digital_linear_equalizer_0, '0', digital_costas_loop_cc_0, '0']
+- [digital_pfb_clock_sync_xxx_0, '0', digital_linear_equalizer_0, '0']
 - [digital_pfb_clock_sync_xxx_0, '0', qtgui_time_sink_x_1, '0']
 - [pfb_arb_resampler_xxx_0, '0', blocks_throttle_0, '0']
 - [virtual_source_0, '0', blocks_complex_to_mag_0, '0']
@@ -1211,3 +1214,4 @@ connections:
 
 metadata:
   file_format: 1
+  grc_version: 3.10.12.0

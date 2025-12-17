@@ -1,6 +1,7 @@
 options:
   parameters:
     author: ''
+    catch_exceptions: 'True'
     category: '[GRC Hier Blocks]'
     cmake_opt: ''
     comment: ''
@@ -87,7 +88,7 @@ blocks:
     gui_hint: 'controls@0: 0,1,1,1'
     label: Delay
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: int
     start: '0'
     step: '1'
@@ -108,7 +109,7 @@ blocks:
     gui_hint: 'controls@1: 1,0,1,1'
     label: 'Equalizer: rate'
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0.0'
     step: '0.0001'
@@ -153,7 +154,7 @@ blocks:
     gui_hint: 'controls@0: 1,1,1,1'
     label: Frequency Offset
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '-0.1'
     step: '0.001'
@@ -174,7 +175,7 @@ blocks:
     gui_hint: 'controls@1: 0,0,1,1'
     label: gain_rx
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '1'
@@ -195,7 +196,7 @@ blocks:
     gui_hint: 'controls@0: 0,0,1,1'
     label: gain_tx
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '1'
@@ -228,7 +229,7 @@ blocks:
     gui_hint: 'controls@0: 1,0,1,1'
     label: Noise Voltage
     min_len: '200'
-    orient: Qt.Vertical
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0'
     step: '0.01'
@@ -249,7 +250,7 @@ blocks:
     gui_hint: 'controls@1: 1,1,1,1'
     label: 'Phase: Bandwidth'
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0.0'
     step: '0.01'
@@ -370,7 +371,7 @@ blocks:
     gui_hint: 'controls@1: 0,1,1,1'
     label: timing_loop_bw
     min_len: '200'
-    orient: Qt.Horizontal
+    orient: QtCore.Qt.Horizontal
     rangeType: float
     start: '0.0'
     step: '0.001'
@@ -382,6 +383,23 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [632, 796.0]
+    rotation: 0
+    state: enabled
+- name: variable_adaptive_algorithm_0
+  id: variable_adaptive_algorithm
+  parameters:
+    comment: ''
+    cons: psk8_gray_dif.base()
+    delta: '10.0'
+    ffactor: '0.99'
+    modulus: '1'
+    step_size: eq_gain
+    type: cma
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [1632, 40.0]
     rotation: 0
     state: enabled
 - name: analog_random_source_x_0
@@ -464,6 +482,7 @@ blocks:
     maxoutbuf: '0'
     minoutbuf: '0'
     num_ports: '1'
+    showports: 'False'
     type: byte
     vlen: '1'
   states:
@@ -638,25 +657,6 @@ blocks:
     coordinate: [566, 255]
     rotation: 0
     state: enabled
-- name: digital_cma_equalizer_cc_0
-  id: digital_cma_equalizer_cc
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    modulus: '1'
-    mu: '0.0002'
-    num_taps: '15'
-    sps: '2'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [904, 500.0]
-    rotation: 0
-    state: enabled
 - name: digital_constellation_decoder_cb_0
   id: digital_constellation_decoder_cb
   parameters:
@@ -688,7 +688,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1136, 602]
+    coordinate: [1464, 588.0]
     rotation: 0
     state: enabled
 - name: digital_diff_decoder_bb_0_0
@@ -696,6 +696,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    coding: digital.DIFF_DIFFERENTIAL
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -712,6 +713,7 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
+    coding: digital.DIFF_DIFFERENTIAL
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -723,25 +725,27 @@ blocks:
     coordinate: [375, 250]
     rotation: 0
     state: enabled
-- name: digital_lms_dd_equalizer_cc_2
-  id: digital_lms_dd_equalizer_cc
+- name: digital_linear_equalizer_0
+  id: digital_linear_equalizer
   parameters:
+    adapt_after_training: 'True'
     affinity: ''
+    alg: variable_adaptive_algorithm_0
     alias: ''
-    cnst: psk8_gray_dif.base()
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    mu: eq_gain
     num_taps: '15'
     sps: '2'
+    training_sequence: '[ ]'
+    training_start_tag: corr_est
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [744, 620]
+    coordinate: [968, 628.0]
     rotation: 0
-    state: bypassed
+    state: enabled
 - name: digital_pfb_clock_sync_xxx_0
   id: digital_pfb_clock_sync_xxx
   parameters:
@@ -762,7 +766,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [504, 644.0]
+    coordinate: [424, 616.0]
     rotation: 0
     state: enabled
 - name: pfb_arb_resampler_xxx_0
@@ -875,7 +879,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1398, 741]
+    coordinate: [1736, 532.0]
     rotation: 0
     state: enabled
 - name: qtgui_number_sink_0
@@ -962,7 +966,7 @@ blocks:
     showports: 'True'
     showrf: 'False'
     type: complex
-    wintype: firdes.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_BLACKMAN_hARRIS
   states:
     bus_sink: false
     bus_source: false
@@ -991,7 +995,7 @@ blocks:
     showports: 'True'
     showrf: 'False'
     type: complex
-    wintype: firdes.WIN_BLACKMAN_hARRIS
+    wintype: window.WIN_BLACKMAN_hARRIS
   states:
     bus_sink: false
     bus_source: false
@@ -1137,14 +1141,13 @@ connections:
 - [blocks_unpack_k_bits_bb_0_0, '0', blocks_delay_0, '0']
 - [channels_channel_model_0, '0', virtual_sink_0, '0']
 - [digital_chunks_to_symbols_xx_0, '0', pfb_arb_resampler_xxx_0, '0']
-- [digital_cma_equalizer_cc_0, '0', digital_costas_loop_cc_0, '0']
 - [digital_constellation_decoder_cb_0, '0', digital_diff_decoder_bb_0_0, '0']
 - [digital_costas_loop_cc_0, '0', digital_constellation_decoder_cb_0, '0']
 - [digital_costas_loop_cc_0, '0', qtgui_const_sink_x_0, '0']
 - [digital_diff_decoder_bb_0_0, '0', blocks_unpack_k_bits_bb_0, '0']
 - [digital_diff_encoder_bb_0, '0', digital_chunks_to_symbols_xx_0, '0']
-- [digital_lms_dd_equalizer_cc_2, '0', digital_cma_equalizer_cc_0, '0']
-- [digital_pfb_clock_sync_xxx_0, '0', digital_lms_dd_equalizer_cc_2, '0']
+- [digital_linear_equalizer_0, '0', digital_costas_loop_cc_0, '0']
+- [digital_pfb_clock_sync_xxx_0, '0', digital_linear_equalizer_0, '0']
 - [pfb_arb_resampler_xxx_0, '0', blocks_throttle_0, '0']
 - [pfb_arb_resampler_xxx_0, '0', qtgui_sink_x_1, '0']
 - [virtual_source_0, '0', blocks_complex_to_mag_squared_0, '0']
@@ -1153,3 +1156,4 @@ connections:
 
 metadata:
   file_format: 1
+  grc_version: 3.10.12.0

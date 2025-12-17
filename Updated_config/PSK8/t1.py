@@ -5,7 +5,7 @@
 # SPDX-License-Identifier: GPL-3.0
 #
 # GNU Radio Python Flow Graph
-# Title: BPSK_software_simplex
+# Title: PSK8_software_simplex
 # GNU Radio version: 3.10.12.0
 
 from PyQt5 import Qt
@@ -30,12 +30,12 @@ import threading
 
 
 
-class BPSK_software_simplex(gr.top_block, Qt.QWidget):
+class t1(gr.top_block, Qt.QWidget):
 
     def __init__(self):
-        gr.top_block.__init__(self, "BPSK_software_simplex", catch_exceptions=True)
+        gr.top_block.__init__(self, "PSK8_software_simplex", catch_exceptions=True)
         Qt.QWidget.__init__(self)
-        self.setWindowTitle("BPSK_software_simplex")
+        self.setWindowTitle("PSK8_software_simplex")
         qtgui.util.check_set_qss()
         try:
             self.setWindowIcon(Qt.QIcon.fromTheme('gnuradio-grc'))
@@ -53,7 +53,7 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "BPSK_software_simplex")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "t1")
 
         try:
             geometry = self.settings.value("geometry")
@@ -66,28 +66,31 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
+        self.b = b = 0.38268
+        self.a = a = 0.92388
         self.sps = sps = 4
+        self.psk8_gray_dif = psk8_gray_dif = digital.constellation_rect([a+b*1j,b+a*1j,-b+a*1j,-a+b*1j,-a-b*1j,-b-a*1j,b-a*1j,a-b*1j], [0, 1, 2, 3,4,5,6,7],
+        4, 2, 2, 1, 1).base()
         self.nfilts = nfilts = 32
-        self.taps_per_filt = taps_per_filt = int((11*sps*nfilts)/nfilts)
         self.excess_bw = excess_bw = 0.35
         self.eq_gain = eq_gain = 0.0001
-        self.variable_adaptive_algorithm_0 = variable_adaptive_algorithm_0 = digital.adaptive_algorithm_cma( digital.constellation_bpsk().base(), eq_gain, 1).base()
+        self.d = d = 1/(2**(1/2))
+        self.variable_adaptive_algorithm_0 = variable_adaptive_algorithm_0 = digital.adaptive_algorithm_cma( psk8_gray_dif.base(), eq_gain, 1).base()
         self.timing_loop_bw = timing_loop_bw = 6.28/200
-        self.taps_0 = taps_0 = [0.9,0,0,0,0.436]
-        self.taps = taps = [0.825,0,0,0.526]
+        self.taps = taps = [0.85,0,0,0.526]
         self.samp_rate = samp_rate = 500e3*6
         self.rrc_taps_tx = rrc_taps_tx = firdes.root_raised_cosine(nfilts, nfilts, 1.0, excess_bw, 11*sps*nfilts)
         self.rrc_taps = rrc_taps = firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), excess_bw, 11*sps*nfilts)
+        self.psk8_s = psk8_s = digital.constellation_rect([1+0*1j,d+d*1j,1j,-d+d*1j,-1,-d-d*1j,-1j,d-d*1j], [0, 1, 2, 3,4,5,6,7],
+        4, 2, 2, 1, 1).base()
         self.phase_bw = phase_bw = 6.28/200
         self.noise_volt = noise_volt = 0
         self.gain_tx = gain_tx = 30
         self.gain_rx = gain_rx = 30
         self.freq_offset = freq_offset = 0
         self.freq = freq = 1e9
-        self.filt_delay = filt_delay = int(1+(taps_per_filt-1)//2)
-        self.delay = delay = 29
-        self.d = d = 1/(2**(1/2))
-        self.arity = arity = 2
+        self.delay = delay = 87
+        self.arity = arity = 8
 
         ##################################################
         # Blocks
@@ -137,64 +140,13 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(1, 2):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self._delay_range = qtgui.Range(0, 200, 1, 29, 200)
+        self._delay_range = qtgui.Range(0, 200, 1, 87, 200)
         self._delay_win = qtgui.RangeWidget(self._delay_range, self.set_delay, "Delay", "counter_slider", int, QtCore.Qt.Horizontal)
         self.controls_grid_layout_0.addWidget(self._delay_win, 0, 1, 1, 1)
         for r in range(0, 1):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(1, 2):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self.qtgui_time_sink_x_1 = qtgui.time_sink_c(
-            1024, #size
-            samp_rate, #samp_rate
-            "", #name
-            1, #number of inputs
-            None # parent
-        )
-        self.qtgui_time_sink_x_1.set_update_time(0.10)
-        self.qtgui_time_sink_x_1.set_y_axis(-2, 2)
-
-        self.qtgui_time_sink_x_1.set_y_label('Amplitude', "")
-
-        self.qtgui_time_sink_x_1.enable_tags(True)
-        self.qtgui_time_sink_x_1.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
-        self.qtgui_time_sink_x_1.enable_autoscale(False)
-        self.qtgui_time_sink_x_1.enable_grid(False)
-        self.qtgui_time_sink_x_1.enable_axis_labels(True)
-        self.qtgui_time_sink_x_1.enable_control_panel(False)
-        self.qtgui_time_sink_x_1.enable_stem_plot(False)
-
-
-        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
-            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
-        widths = [1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1]
-        colors = ['blue', 'red', 'green', 'black', 'cyan',
-            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
-        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
-            1.0, 1.0, 1.0, 1.0, 1.0]
-        styles = [1, 1, 1, 1, 1,
-            1, 1, 1, 1, 1]
-        markers = [-1, -1, -1, -1, -1,
-            -1, -1, -1, -1, -1]
-
-
-        for i in range(2):
-            if len(labels[i]) == 0:
-                if (i % 2 == 0):
-                    self.qtgui_time_sink_x_1.set_line_label(i, "Re{{Data {0}}}".format(i/2))
-                else:
-                    self.qtgui_time_sink_x_1.set_line_label(i, "Im{{Data {0}}}".format(i/2))
-            else:
-                self.qtgui_time_sink_x_1.set_line_label(i, labels[i])
-            self.qtgui_time_sink_x_1.set_line_width(i, widths[i])
-            self.qtgui_time_sink_x_1.set_line_color(i, colors[i])
-            self.qtgui_time_sink_x_1.set_line_style(i, styles[i])
-            self.qtgui_time_sink_x_1.set_line_marker(i, markers[i])
-            self.qtgui_time_sink_x_1.set_line_alpha(i, alphas[i])
-
-        self._qtgui_time_sink_x_1_win = sip.wrapinstance(self.qtgui_time_sink_x_1.qwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_time_sink_x_1_win)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_f(
             512, #size
             samp_rate, #samp_rate
@@ -269,6 +221,28 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
             self.top_grid_layout.setRowStretch(r, 1)
         for c in range(1, 2):
             self.top_grid_layout.setColumnStretch(c, 1)
+        self.qtgui_sink_x_1 = qtgui.sink_c(
+            1024, #fftsize
+            window.WIN_BLACKMAN_hARRIS, #wintype
+            0, #fc
+            samp_rate, #bw
+            "Tx_Signal", #name
+            True, #plotfreq
+            True, #plotwaterfall
+            True, #plottime
+            True, #plotconst
+            None # parent
+        )
+        self.qtgui_sink_x_1.set_update_time(1.0/10)
+        self._qtgui_sink_x_1_win = sip.wrapinstance(self.qtgui_sink_x_1.qwidget(), Qt.QWidget)
+
+        self.qtgui_sink_x_1.enable_rf_freq(False)
+
+        self.top_grid_layout.addWidget(self._qtgui_sink_x_1_win, 1, 0, 1, 1)
+        for r in range(1, 2):
+            self.top_grid_layout.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.top_grid_layout.setColumnStretch(c, 1)
         self.qtgui_number_sink_0 = qtgui.number_sink(
             gr.sizeof_float,
             0,
@@ -317,7 +291,7 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.qtgui_const_sink_x_0.enable_axis_labels(True)
 
 
-        labels = ['', '', '', '', '',
+        labels = ['Rx_constellation', '', '', '', '',
             '', '', '', '', '']
         widths = [1, 1, 1, 1, 1,
             1, 1, 1, 1, 1]
@@ -376,25 +350,25 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
             self.controls_grid_layout_1.setColumnStretch(c, 1)
         self.digital_pfb_clock_sync_xxx_0 = digital.pfb_clock_sync_ccf(sps, timing_loop_bw, rrc_taps, nfilts, (nfilts/2), 1.5, 2)
         self.digital_linear_equalizer_0 = digital.linear_equalizer(15, 2, variable_adaptive_algorithm_0, True, [ ], 'corr_est')
-        self.digital_diff_encoder_bb_0 = digital.diff_encoder_bb(2, digital.DIFF_DIFFERENTIAL)
-        self.digital_diff_decoder_bb_0_0 = digital.diff_decoder_bb(2, digital.DIFF_DIFFERENTIAL)
+        self.digital_diff_encoder_bb_0 = digital.diff_encoder_bb(8, digital.DIFF_DIFFERENTIAL)
+        self.digital_diff_decoder_bb_0_0 = digital.diff_decoder_bb(8, digital.DIFF_DIFFERENTIAL)
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(phase_bw, arity, False)
-        self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(digital.constellation_bpsk().base())
-        self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bc(digital.constellation_bpsk().points(), 1)
+        self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(digital.constellation_8psk().base())
+        self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bc(digital.constellation_8psk().points(), 1)
         self.channels_channel_model_0 = channels.channel_model(
             noise_voltage=noise_volt,
             frequency_offset=freq_offset,
             epsilon=1,
-            taps=taps_0,
+            taps=taps,
             noise_seed=0,
             block_tags=False)
         self.blocks_unpack_k_bits_bb_0_0 = blocks.unpack_k_bits_bb(8)
-        self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(1)
+        self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(3)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
-        self.blocks_packed_to_unpacked_xx_0 = blocks.packed_to_unpacked_bb(1, gr.GR_MSB_FIRST)
+        self.blocks_packed_to_unpacked_xx_0 = blocks.packed_to_unpacked_bb(3, gr.GR_MSB_FIRST)
         self.blocks_moving_average_xx_0 = blocks.moving_average_ff(10000, 0.0001, 4000, 1)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_char*1, delay)
-        self.blocks_complex_to_mag_0 = blocks.complex_to_mag(1)
+        self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(1)
         self.blocks_char_to_float_0_0_0 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0_0 = blocks.char_to_float(1, 1)
         self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 256, 10000000))), True)
@@ -407,14 +381,14 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_unpack_k_bits_bb_0_0, 0))
         self.connect((self.blocks_char_to_float_0_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.blocks_char_to_float_0_0_0, 0), (self.qtgui_time_sink_x_0, 1))
-        self.connect((self.blocks_complex_to_mag_0, 0), (self.blocks_moving_average_xx_0, 0))
+        self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.blocks_moving_average_xx_0, 0))
         self.connect((self.blocks_delay_0, 0), (self.blocks_char_to_float_0_0_0, 0))
         self.connect((self.blocks_moving_average_xx_0, 0), (self.qtgui_number_sink_0, 0))
         self.connect((self.blocks_packed_to_unpacked_xx_0, 0), (self.digital_diff_encoder_bb_0, 0))
         self.connect((self.blocks_throttle_0, 0), (self.channels_channel_model_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_char_to_float_0_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0_0, 0), (self.blocks_delay_0, 0))
-        self.connect((self.channels_channel_model_0, 0), (self.blocks_complex_to_mag_0, 0))
+        self.connect((self.channels_channel_model_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
         self.connect((self.channels_channel_model_0, 0), (self.qtgui_sink_x_1_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
@@ -425,17 +399,29 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.connect((self.digital_diff_encoder_bb_0, 0), (self.digital_chunks_to_symbols_xx_0, 0))
         self.connect((self.digital_linear_equalizer_0, 0), (self.digital_costas_loop_cc_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_linear_equalizer_0, 0))
-        self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.qtgui_time_sink_x_1, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.blocks_throttle_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.qtgui_sink_x_1, 0))
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "BPSK_software_simplex")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "t1")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
 
         event.accept()
+
+    def get_b(self):
+        return self.b
+
+    def set_b(self, b):
+        self.b = b
+
+    def get_a(self):
+        return self.a
+
+    def set_a(self, a):
+        self.a = a
 
     def get_sps(self):
         return self.sps
@@ -444,8 +430,13 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.sps = sps
         self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), self.excess_bw, 11*self.sps*self.nfilts))
         self.set_rrc_taps_tx(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0, self.excess_bw, 11*self.sps*self.nfilts))
-        self.set_taps_per_filt(int((11*self.sps*self.nfilts)/self.nfilts))
         self.pfb_arb_resampler_xxx_0.set_rate(self.sps)
+
+    def get_psk8_gray_dif(self):
+        return self.psk8_gray_dif
+
+    def set_psk8_gray_dif(self, psk8_gray_dif):
+        self.psk8_gray_dif = psk8_gray_dif
 
     def get_nfilts(self):
         return self.nfilts
@@ -454,14 +445,6 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.nfilts = nfilts
         self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), self.excess_bw, 11*self.sps*self.nfilts))
         self.set_rrc_taps_tx(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0, self.excess_bw, 11*self.sps*self.nfilts))
-        self.set_taps_per_filt(int((11*self.sps*self.nfilts)/self.nfilts))
-
-    def get_taps_per_filt(self):
-        return self.taps_per_filt
-
-    def set_taps_per_filt(self, taps_per_filt):
-        self.taps_per_filt = taps_per_filt
-        self.set_filt_delay(int(1+(self.taps_per_filt-1)//2))
 
     def get_excess_bw(self):
         return self.excess_bw
@@ -477,6 +460,12 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
     def set_eq_gain(self, eq_gain):
         self.eq_gain = eq_gain
 
+    def get_d(self):
+        return self.d
+
+    def set_d(self, d):
+        self.d = d
+
     def get_variable_adaptive_algorithm_0(self):
         return self.variable_adaptive_algorithm_0
 
@@ -490,18 +479,12 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.timing_loop_bw = timing_loop_bw
         self.digital_pfb_clock_sync_xxx_0.set_loop_bandwidth(self.timing_loop_bw)
 
-    def get_taps_0(self):
-        return self.taps_0
-
-    def set_taps_0(self, taps_0):
-        self.taps_0 = taps_0
-        self.channels_channel_model_0.set_taps(self.taps_0)
-
     def get_taps(self):
         return self.taps
 
     def set_taps(self, taps):
         self.taps = taps
+        self.channels_channel_model_0.set_taps(self.taps)
 
     def get_samp_rate(self):
         return self.samp_rate
@@ -509,9 +492,9 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.blocks_throttle_0.set_sample_rate(self.samp_rate)
+        self.qtgui_sink_x_1.set_frequency_range(0, self.samp_rate)
         self.qtgui_sink_x_1_0.set_frequency_range(0, self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
-        self.qtgui_time_sink_x_1.set_samp_rate(self.samp_rate)
 
     def get_rrc_taps_tx(self):
         return self.rrc_taps_tx
@@ -526,6 +509,12 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
     def set_rrc_taps(self, rrc_taps):
         self.rrc_taps = rrc_taps
         self.digital_pfb_clock_sync_xxx_0.update_taps(self.rrc_taps)
+
+    def get_psk8_s(self):
+        return self.psk8_s
+
+    def set_psk8_s(self, psk8_s):
+        self.psk8_s = psk8_s
 
     def get_phase_bw(self):
         return self.phase_bw
@@ -566,24 +555,12 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
     def set_freq(self, freq):
         self.freq = freq
 
-    def get_filt_delay(self):
-        return self.filt_delay
-
-    def set_filt_delay(self, filt_delay):
-        self.filt_delay = filt_delay
-
     def get_delay(self):
         return self.delay
 
     def set_delay(self, delay):
         self.delay = delay
         self.blocks_delay_0.set_dly(int(self.delay))
-
-    def get_d(self):
-        return self.d
-
-    def set_d(self, d):
-        self.d = d
 
     def get_arity(self):
         return self.arity
@@ -594,7 +571,7 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
 
 
 
-def main(top_block_cls=BPSK_software_simplex, options=None):
+def main(top_block_cls=t1, options=None):
 
     qapp = Qt.QApplication(sys.argv)
 
