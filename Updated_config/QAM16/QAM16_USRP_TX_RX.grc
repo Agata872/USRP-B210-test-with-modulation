@@ -369,7 +369,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1888, 1796.0]
+    coordinate: [1872, 1796.0]
     rotation: 0
     state: enabled
 - name: analog_random_source_x_0
@@ -904,7 +904,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2320, 1724.0]
+    coordinate: [2304, 1700.0]
     rotation: 0
     state: enabled
 - name: qtgui_number_sink_0
