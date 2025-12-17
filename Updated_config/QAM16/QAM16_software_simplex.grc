@@ -1094,9 +1094,9 @@ blocks:
   parameters:
     affinity: ''
     alias: ''
-    autoscale: 'False'
+    autoscale: 'True'
     avg: '0'
-    color1: ("black", "black")
+    color1: ("blue", "red")
     color10: ("black", "black")
     color2: ("black", "black")
     color3: ("black", "black")

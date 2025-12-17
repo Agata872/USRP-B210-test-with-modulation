@@ -258,7 +258,7 @@ class QAM16_software_simplex(gr.top_block, Qt.QWidget):
             '', '', '', '', '']
         units = ['', '', '', '', '',
             '', '', '', '', '']
-        colors = [("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"),
+        colors = [("blue", "red"), ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"),
             ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black"), ("black", "black")]
         factor = [1, 1, 1, 1, 1,
             1, 1, 1, 1, 1]
@@ -274,7 +274,7 @@ class QAM16_software_simplex(gr.top_block, Qt.QWidget):
             self.qtgui_number_sink_0.set_unit(i, units[i])
             self.qtgui_number_sink_0.set_factor(i, factor[i])
 
-        self.qtgui_number_sink_0.enable_autoscale(False)
+        self.qtgui_number_sink_0.enable_autoscale(True)
         self._qtgui_number_sink_0_win = sip.wrapinstance(self.qtgui_number_sink_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_number_sink_0_win)
         self.qtgui_const_sink_x_1 = qtgui.const_sink_c(
