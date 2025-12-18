@@ -461,7 +461,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 656.0]
+    coordinate: [616, 656.0]
     rotation: 0
     state: true
 - name: blocks_delay_0
@@ -743,7 +743,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 748.0]
+    coordinate: [616, 748.0]
     rotation: 0
     state: true
 - name: pfb_arb_resampler_xxx_0
@@ -977,7 +977,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [536, 1052.0]
+    coordinate: [616, 1052.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_0
@@ -1787,7 +1787,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [0, 696.0]
+    coordinate: [0, 704.0]
     rotation: 0
     state: enabled
 - name: virtual_sink_0
