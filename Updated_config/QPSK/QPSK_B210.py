@@ -7,7 +7,7 @@
 # GNU Radio Python Flow Graph
 # Title: qpsk_mod_demod
 # Author: tianzheng
-# GNU Radio version: 3.10.10.0
+# GNU Radio version: 3.10.12.0
 
 from PyQt5 import Qt
 from gnuradio import qtgui
@@ -26,10 +26,9 @@ from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
-from gnuradio import uhd
-import time
 from gnuradio.filter import pfb
 import sip
+import threading
 
 
 
@@ -56,7 +55,7 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("GNU Radio", "QPSK_B210")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "QPSK_B210")
 
         try:
             geometry = self.settings.value("geometry")
@@ -64,6 +63,7 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
+        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
@@ -85,8 +85,8 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
         self.rrc_taps = rrc_taps = firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), excess_bw, 11*sps*nfilts)
         self.phase_bw = phase_bw = 6.28/200
         self.noise_volt = noise_volt = 0
-        self.gain_tx = gain_tx = 50
-        self.gain_rx = gain_rx = 50
+        self.gain_tx = gain_tx = 40
+        self.gain_rx = gain_rx = 40
         self.freq_offset = freq_offset = 0
         self.freq = freq = 920e6
         self.filt_delay = filt_delay = int(1+(taps_per_filt-1)//2)
@@ -134,20 +134,6 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(0, 1):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self._gain_tx_range = qtgui.Range(0, 74, 1, 50, 200)
-        self._gain_tx_win = qtgui.RangeWidget(self._gain_tx_range, self.set_gain_tx, "gain_tx", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.controls_grid_layout_0.addWidget(self._gain_tx_win, 0, 0, 1, 1)
-        for r in range(0, 1):
-            self.controls_grid_layout_0.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self._gain_rx_range = qtgui.Range(0, 74, 1, 50, 200)
-        self._gain_rx_win = qtgui.RangeWidget(self._gain_rx_range, self.set_gain_rx, "gain_rx", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.controls_grid_layout_1.addWidget(self._gain_rx_win, 0, 0, 1, 1)
-        for r in range(0, 1):
-            self.controls_grid_layout_1.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.controls_grid_layout_1.setColumnStretch(c, 1)
         self._freq_offset_range = qtgui.Range(-0.1, 0.1, 0.001, 0, 200)
         self._freq_offset_win = qtgui.RangeWidget(self._freq_offset_range, self.set_freq_offset, "Frequency Offset", "counter_slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_0.addWidget(self._freq_offset_win, 1, 1, 1, 1)
@@ -155,37 +141,6 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(1, 2):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self.uhd_usrp_source_0 = uhd.usrp_source(
-            ",".join(("serial=31D4A23", "")),
-            uhd.stream_args(
-                cpu_format="fc32",
-                args='',
-                channels=list(range(0,1)),
-            ),
-        )
-        self.uhd_usrp_source_0.set_samp_rate(samp_rate)
-        # No synchronization enforced.
-
-        self.uhd_usrp_source_0.set_center_freq(freq, 0)
-        self.uhd_usrp_source_0.set_antenna('TX/RX', 0)
-        self.uhd_usrp_source_0.set_gain(gain_rx, 0)
-        self.uhd_usrp_source_0.set_auto_dc_offset(False, 0)
-        self.uhd_usrp_source_0.set_auto_iq_balance(False, 0)
-        self.uhd_usrp_sink_0 = uhd.usrp_sink(
-            ",".join(("serial=31DB555", "")),
-            uhd.stream_args(
-                cpu_format="fc32",
-                args='',
-                channels=list(range(0,1)),
-            ),
-            '',
-        )
-        self.uhd_usrp_sink_0.set_samp_rate(samp_rate)
-        self.uhd_usrp_sink_0.set_time_unknown_pps(uhd.time_spec(0))
-
-        self.uhd_usrp_sink_0.set_center_freq(freq, 0)
-        self.uhd_usrp_sink_0.set_antenna("TX/RX", 0)
-        self.uhd_usrp_sink_0.set_gain(gain_tx, 0)
         self.qtgui_sink_x_1_0 = qtgui.sink_c(
             1024, #fftsize
             window.WIN_BLACKMAN_hARRIS, #wintype
@@ -314,6 +269,20 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
             flt_size=nfilts,
             atten=100)
         self.pfb_arb_resampler_xxx_0.declare_sample_delay(0)
+        self._gain_tx_range = qtgui.Range(0, 74, 1, 40, 200)
+        self._gain_tx_win = qtgui.RangeWidget(self._gain_tx_range, self.set_gain_tx, "gain_tx", "counter_slider", int, QtCore.Qt.Horizontal)
+        self.controls_grid_layout_0.addWidget(self._gain_tx_win, 0, 0, 1, 1)
+        for r in range(0, 1):
+            self.controls_grid_layout_0.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.controls_grid_layout_0.setColumnStretch(c, 1)
+        self._gain_rx_range = qtgui.Range(0, 74, 1, 40, 200)
+        self._gain_rx_win = qtgui.RangeWidget(self._gain_rx_range, self.set_gain_rx, "gain_rx", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.controls_grid_layout_1.addWidget(self._gain_rx_win, 0, 0, 1, 1)
+        for r in range(0, 1):
+            self.controls_grid_layout_1.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.controls_grid_layout_1.setColumnStretch(c, 1)
         self._eq_gain_range = qtgui.Range(0.0, 0.001, 0.0001, 0.0001, 200)
         self._eq_gain_win = qtgui.RangeWidget(self._eq_gain_range, self.set_eq_gain, "Equalizer: rate", "counter_slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_1.addWidget(self._eq_gain_win, 1, 0, 1, 1)
@@ -356,12 +325,12 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
         self.blocks_unpacked_to_packed_xx_0 = blocks.unpacked_to_packed_bb(2, gr.GR_MSB_FIRST)
         self.blocks_packed_to_unpacked_xx_0 = blocks.packed_to_unpacked_bb(2, gr.GR_MSB_FIRST)
         self.blocks_moving_average_xx_0 = blocks.moving_average_ff(10000, 0.0001, 4000, 1)
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\hello.txt', False, 0, 0)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\hello.txt', True, 0, 0)
         self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
+        self.blocks_file_sink_0_0_0 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\output.bin', False)
+        self.blocks_file_sink_0_0_0.set_unbuffered(True)
         self.blocks_file_sink_0_0 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\tx.bin', False)
         self.blocks_file_sink_0_0.set_unbuffered(True)
-        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\output.bin', False)
-        self.blocks_file_sink_0.set_unbuffered(True)
         self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(1)
 
 
@@ -373,8 +342,10 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_file_source_0, 0), (self.blocks_packed_to_unpacked_xx_0, 0))
         self.connect((self.blocks_moving_average_xx_0, 0), (self.qtgui_number_sink_0, 0))
         self.connect((self.blocks_packed_to_unpacked_xx_0, 0), (self.digital_diff_encoder_bb_0, 0))
-        self.connect((self.blocks_unpacked_to_packed_xx_0, 0), (self.blocks_file_sink_0, 0))
-        self.connect((self.channels_channel_model_0, 0), (self.uhd_usrp_sink_0, 0))
+        self.connect((self.blocks_unpacked_to_packed_xx_0, 0), (self.blocks_file_sink_0_0_0, 0))
+        self.connect((self.channels_channel_model_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
+        self.connect((self.channels_channel_model_0, 0), (self.digital_symbol_sync_xx_0, 0))
+        self.connect((self.channels_channel_model_0, 0), (self.qtgui_sink_x_1_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_diff_decoder_bb_0_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_constellation_decoder_cb_0, 0))
@@ -385,13 +356,10 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.digital_linear_equalizer_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.channels_channel_model_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.qtgui_sink_x_1, 0))
-        self.connect((self.uhd_usrp_source_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
-        self.connect((self.uhd_usrp_source_0, 0), (self.digital_symbol_sync_xx_0, 0))
-        self.connect((self.uhd_usrp_source_0, 0), (self.qtgui_sink_x_1_0, 0))
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("GNU Radio", "QPSK_B210")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "QPSK_B210")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -483,8 +451,6 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.qtgui_sink_x_1.set_frequency_range(self.freq, self.samp_rate)
         self.qtgui_sink_x_1_0.set_frequency_range(self.freq, self.samp_rate)
-        self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
-        self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
 
     def get_rrc_taps_tx(self):
         return self.rrc_taps_tx
@@ -518,14 +484,12 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
 
     def set_gain_tx(self, gain_tx):
         self.gain_tx = gain_tx
-        self.uhd_usrp_sink_0.set_gain(self.gain_tx, 0)
 
     def get_gain_rx(self):
         return self.gain_rx
 
     def set_gain_rx(self, gain_rx):
         self.gain_rx = gain_rx
-        self.uhd_usrp_source_0.set_gain(self.gain_rx, 0)
 
     def get_freq_offset(self):
         return self.freq_offset
@@ -541,8 +505,6 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
         self.freq = freq
         self.qtgui_sink_x_1.set_frequency_range(self.freq, self.samp_rate)
         self.qtgui_sink_x_1_0.set_frequency_range(self.freq, self.samp_rate)
-        self.uhd_usrp_sink_0.set_center_freq(self.freq, 0)
-        self.uhd_usrp_source_0.set_center_freq(self.freq, 0)
 
     def get_filt_delay(self):
         return self.filt_delay
@@ -572,6 +534,7 @@ def main(top_block_cls=QPSK_B210, options=None):
     tb = top_block_cls()
 
     tb.start()
+    tb.flowgraph_started.set()
 
     tb.show()
 

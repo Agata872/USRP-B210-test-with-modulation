@@ -191,7 +191,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [640, 4]
+    coordinate: [560, 8.0]
     rotation: 0
     state: enabled
 - name: pilot_carriers
@@ -364,9 +364,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [0, 140]
+    coordinate: [0, 208.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: analog_random_source_x_0_0
   id: analog_random_source_x
   parameters:
@@ -427,22 +427,22 @@ blocks:
     coordinate: [2512, 1160.0]
     rotation: 0
     state: enabled
-- name: blocks_file_sink_0
+- name: blocks_file_sink_0_0
   id: blocks_file_sink
   parameters:
     affinity: ''
     alias: ''
     append: 'False'
     comment: ''
-    file: D:\Documents\Linux\VM_share\gnuradio-MIMO-OFDM-main\send_data.bin
+    file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\QPSK\tx.bin
     type: byte
-    unbuffered: 'False'
+    unbuffered: 'True'
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [32, 420.0]
+    coordinate: [152, 508.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_1
@@ -452,7 +452,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: D:\Documents\Linux\VM_share\gnuradio-MIMO-OFDM-main\recv_data.bin
+    file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\QPSK\output.bin
     type: byte
     unbuffered: 'False'
     vlen: '1'
@@ -461,6 +461,28 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [3512, 908.0]
+    rotation: 0
+    state: enabled
+- name: blocks_file_source_0
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: ''
+    file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\QPSK\hello.txt
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'True'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [0, 196.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_const_vxx_0
@@ -478,7 +500,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 404.0]
+    coordinate: [448, 396.0]
     rotation: 180
     state: enabled
 - name: blocks_multiply_const_vxx_0_0
@@ -572,7 +594,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 288.0]
+    coordinate: [496, 280.0]
     rotation: 0
     state: enabled
 - name: blocks_repack_bits_bb_0_0_0
@@ -592,7 +614,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [776, 264.0]
+    coordinate: [792, 208.0]
     rotation: 0
     state: enabled
 - name: blocks_repack_bits_bb_0_0_0_0
@@ -671,7 +693,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [160, 264.0]
+    coordinate: [280, 264.0]
     rotation: 0
     state: enabled
 - name: blocks_stream_to_tagged_stream_0_0
@@ -690,7 +712,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [184, 728.0]
+    coordinate: [240, 728.0]
     rotation: 0
     state: enabled
 - name: blocks_tag_debug_1
@@ -747,7 +769,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [600, 616.0]
+    coordinate: [856, 624.0]
     rotation: 0
     state: enabled
 - name: blocks_tag_gate_0_0
@@ -786,7 +808,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1160, 260.0]
+    coordinate: [1248, 292.0]
     rotation: 0
     state: enabled
 - name: blocks_tagged_stream_mux_0_0
@@ -825,7 +847,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1648, 224.0]
+    coordinate: [1768, 172.0]
     rotation: 0
     state: enabled
 - name: blocks_throttle_0_0
@@ -865,7 +887,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1512, 480.0]
+    coordinate: [1600, 536.0]
     rotation: 0
     state: enabled
 - name: channels_channel_model_0_0_0
@@ -886,7 +908,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [824, 1192.0]
+    coordinate: [1088, 1200.0]
     rotation: 0
     state: enabled
 - name: digital_chunks_to_symbols_xx_0
@@ -906,7 +928,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1096, 168.0]
+    coordinate: [1208, 168.0]
     rotation: 0
     state: enabled
 - name: digital_chunks_to_symbols_xx_0_0
@@ -926,7 +948,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [888, 344.0]
+    coordinate: [816, 304.0]
     rotation: 0
     state: enabled
 - name: digital_chunks_to_symbols_xx_0_0_0
@@ -998,7 +1020,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2112, 1492.0]
+    coordinate: [2088, 1500.0]
     rotation: 180
     state: enabled
 - name: digital_constellation_decoder_cb_1
@@ -1104,7 +1126,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1264, 360.0]
+    coordinate: [1272, 416.0]
     rotation: 180
     state: enabled
 - name: digital_ofdm_carrier_allocator_cvc_0_0
@@ -1271,7 +1293,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2592, 1420.0]
+    coordinate: [2624, 1420.0]
     rotation: 180
     state: enabled
 - name: digital_ofdm_serializer_vcc_payload
@@ -1334,7 +1356,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1736, 260.0]
+    coordinate: [1720, 276.0]
     rotation: 0
     state: enabled
 - name: digital_ofdm_sync_sc_cfb_0_0
@@ -1353,7 +1375,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2032, 1140.0]
+    coordinate: [1872, 1052.0]
     rotation: 0
     state: enabled
 - name: digital_packet_headerparser_b_0
@@ -1385,7 +1407,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2216, 1220.0]
+    coordinate: [2120, 1220.0]
     rotation: 0
     state: enabled
 - name: digital_protocol_formatter_bb_0
@@ -1402,7 +1424,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [408, 184.0]
+    coordinate: [488, 176.0]
     rotation: 0
     state: enabled
 - name: digital_protocol_formatter_bb_0_0
@@ -1419,7 +1441,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 592.0]
+    coordinate: [472, 600.0]
     rotation: 0
     state: enabled
 - name: fft_vxx_0
@@ -1461,7 +1483,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1008, 364.0]
+    coordinate: [1000, 436.0]
     rotation: 180
     state: enabled
 - name: fft_vxx_0_0_0
@@ -1650,7 +1672,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1400, 220.0]
+    coordinate: [1496, 156.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0_0_0
@@ -2557,11 +2579,12 @@ blocks:
 connections:
 - [analog_frequency_modulator_fc_0, '0', blocks_multiply_xx_0, '0']
 - [analog_frequency_modulator_fc_0_0, '0', blocks_multiply_xx_0_0, '0']
-- [analog_random_source_x_0, '0', blocks_file_sink_0, '0']
 - [analog_random_source_x_0, '0', blocks_stream_to_tagged_stream_0, '0']
 - [analog_random_source_x_0_0, '0', blocks_stream_to_tagged_stream_0_0, '0']
 - [blocks_delay_0, '0', blocks_multiply_xx_0, '1']
 - [blocks_delay_0_0, '0', blocks_multiply_xx_0_0, '1']
+- [blocks_file_source_0, '0', blocks_file_sink_0_0, '0']
+- [blocks_file_source_0, '0', blocks_stream_to_tagged_stream_0, '0']
 - [blocks_multiply_const_vxx_0, '0', blocks_tag_gate_0, '0']
 - [blocks_multiply_const_vxx_0_0, '0', blocks_tag_gate_0_0, '0']
 - [blocks_multiply_xx_0, '0', digital_header_payload_demux_0, '0']
@@ -2643,4 +2666,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.10.0
+  grc_version: 3.10.12.0

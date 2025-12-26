@@ -7,13 +7,14 @@
 # GNU Radio Python Flow Graph
 # Title: MIMO_simulition
 # Description: simulation of data transmission
-# GNU Radio version: 3.10.10.0
+# GNU Radio version: 3.10.12.0
 
 from PyQt5 import Qt
 from gnuradio import qtgui
 from gnuradio import analog
 from gnuradio import blocks
 import numpy
+import pmt
 from gnuradio import channels
 from gnuradio.filter import firdes
 from gnuradio import digital
@@ -28,6 +29,7 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio.digital.utils import tagged_streams
 import sip
+import threading
 
 
 
@@ -54,7 +56,7 @@ class MIMO_simulation(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("GNU Radio", "MIMO_simulation")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "MIMO_simulation")
 
         try:
             geometry = self.settings.value("geometry")
@@ -62,6 +64,7 @@ class MIMO_simulation(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
+        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
@@ -644,14 +647,15 @@ class MIMO_simulation(gr.top_block, Qt.QWidget):
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
         self.blocks_multiply_const_vxx_0_0 = blocks.multiply_const_cc(0.053)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(0.053)
-        self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Linux\\VM_share\\gnuradio-MIMO-OFDM-main\\recv_data.bin', False)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\hello.txt', True, 0, 0)
+        self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
+        self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\output.bin', False)
         self.blocks_file_sink_1.set_unbuffered(False)
-        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Linux\\VM_share\\gnuradio-MIMO-OFDM-main\\send_data.bin', False)
-        self.blocks_file_sink_0.set_unbuffered(False)
+        self.blocks_file_sink_0_0 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\tx.bin', False)
+        self.blocks_file_sink_0_0.set_unbuffered(True)
         self.blocks_delay_0_0 = blocks.delay(gr.sizeof_gr_complex*1, (int(fft_len+fft_len/4)))
         self.blocks_delay_0 = blocks.delay(gr.sizeof_gr_complex*1, (int(fft_len+fft_len/4)))
         self.analog_random_source_x_0_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 255, 1000))), True)
-        self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 255, 1000))), True)
         self.analog_frequency_modulator_fc_0_0 = analog.frequency_modulator_fc((-2.0/fft_len))
         self.analog_frequency_modulator_fc_0 = analog.frequency_modulator_fc((-2.0/fft_len))
 
@@ -663,11 +667,11 @@ class MIMO_simulation(gr.top_block, Qt.QWidget):
         self.msg_connect((self.digital_packet_headerparser_b_0_0, 'header_data'), (self.digital_header_payload_demux_0_0, 'header_data'))
         self.connect((self.analog_frequency_modulator_fc_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.analog_frequency_modulator_fc_0_0, 0), (self.blocks_multiply_xx_0_0, 0))
-        self.connect((self.analog_random_source_x_0, 0), (self.blocks_file_sink_0, 0))
-        self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.analog_random_source_x_0_0, 0), (self.blocks_stream_to_tagged_stream_0_0, 0))
         self.connect((self.blocks_delay_0, 0), (self.blocks_multiply_xx_0, 1))
         self.connect((self.blocks_delay_0_0, 0), (self.blocks_multiply_xx_0_0, 1))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_file_sink_0_0, 0))
+        self.connect((self.blocks_file_source_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_tag_gate_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0_0, 0), (self.blocks_tag_gate_0_0, 0))
         self.connect((self.blocks_multiply_xx_0, 0), (self.digital_header_payload_demux_0, 0))
@@ -741,7 +745,7 @@ class MIMO_simulation(gr.top_block, Qt.QWidget):
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("GNU Radio", "MIMO_simulation")
+        self.settings = Qt.QSettings("gnuradio/flowgraphs", "MIMO_simulation")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -917,6 +921,7 @@ def main(top_block_cls=MIMO_simulation, options=None):
     tb = top_block_cls()
 
     tb.start()
+    tb.flowgraph_started.set()
 
     tb.show()
 
