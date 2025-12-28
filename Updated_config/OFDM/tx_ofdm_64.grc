@@ -69,7 +69,7 @@ blocks:
     start: '0'
     step: '1'
     stop: '100'
-    value: '45'
+    value: '50'
     widget: counter_slider
   states:
     bus_sink: false
@@ -456,7 +456,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1248, 1036.0]
+    coordinate: [1352, 1044.0]
     rotation: 0
     state: enabled
 - name: blocks_multiply_const_vxx_0
@@ -726,7 +726,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1384, 628.0]
+    coordinate: [1392, 668.0]
     rotation: 0
     state: enabled
 - name: fft_vxx_0
