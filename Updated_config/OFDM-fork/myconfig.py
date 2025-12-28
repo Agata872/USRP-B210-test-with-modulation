@@ -11,6 +11,7 @@
 
 from PyQt5 import Qt
 from gnuradio import qtgui
+from gnuradio import analog
 from gnuradio import blocks
 import numpy
 from gnuradio import digital
@@ -24,6 +25,8 @@ from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
+from gnuradio import uhd
+import time
 import sip
 import threading
 
@@ -68,50 +71,82 @@ class myconfig(gr.top_block, Qt.QWidget):
         self.pilot_symbols = pilot_symbols = ((1, 1, 1, -1,),)
         self.pilot_carriers = pilot_carriers = ((-21, -7, 7, 21,),)
         self.payload_mod = payload_mod = digital.constellation_qpsk()
+        self.packet_length_tag_key = packet_length_tag_key = "packet_len"
         self.occupied_carriers = occupied_carriers = (list(range(-26, -21)) + list(range(-20, -7)) + list(range(-6, 0)) + list(range(1, 7)) + list(range(8, 21)) + list(range(22, 27)),)
+        self.length_tag_key1 = length_tag_key1 = "frame_len"
         self.length_tag_key = length_tag_key = "packet_len"
         self.header_mod = header_mod = digital.constellation_bpsk()
         self.fft_len = fft_len = 64
-        self.sync_word3 = sync_word3 = [0, 0, 0, 0, 0, 0, -1, -1, -1, -1, 1, 1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 0, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, -1, -1, -1, -1, 0, 0, 0, 0, 0]
         self.sync_word2 = sync_word2 = [0, 0, 0, 0, 0, 0, -1, -1, -1, -1, 1, 1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 0, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, -1, -1, -1, -1, 0, 0, 0, 0, 0]
         self.sync_word1 = sync_word1 = [0., 0., 0., 0., 0., 0., 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., -1.41421356, 0., -1.41421356, 0., -1.41421356, 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., -1.41421356, 0., -1.41421356, 0., -1.41421356, 0., -1.41421356, 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., 1.41421356, 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., 1.41421356, 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., 1.41421356, 0., 1.41421356, 0., 0., 0., 0., 0., 0.]
         self.samp_rate = samp_rate = 1000000
         self.rolloff = rolloff = 0
         self.payload_equalizer = payload_equalizer = digital.ofdm_equalizer_simpledfe(fft_len, payload_mod.base(), occupied_carriers, pilot_carriers, pilot_symbols, 1)
-        self.packet_length_tag_key = packet_length_tag_key = "packet_len"
         self.packet_len = packet_len = 96
+        self.header_formatter = header_formatter = digital.packet_header_ofdm(occupied_carriers, n_syms=1, len_tag_key=packet_length_tag_key, frame_len_tag_key=length_tag_key1, bits_per_header_sym=header_mod.bits_per_symbol(), bits_per_payload_sym=payload_mod.bits_per_symbol(), scramble_header=False)
         self.header_equalizer = header_equalizer = digital.ofdm_equalizer_simpledfe(fft_len, header_mod.base(), occupied_carriers, pilot_carriers, pilot_symbols)
         self.hdr_format = hdr_format = digital.header_format_ofdm(occupied_carriers, 1, length_tag_key,)
-        self.gain = gain = 40
+        self.gain = gain = 50
         self.centre_fre = centre_fre = 920000000
 
         ##################################################
         # Blocks
         ##################################################
 
-        self.qtgui_time_sink_x_0 = qtgui.time_sink_c(
+        self.uhd_usrp_source_0 = uhd.usrp_source(
+            ",".join(("serial=31D4A23", "")),
+            uhd.stream_args(
+                cpu_format="fc32",
+                args='',
+                channels=list(range(0,1)),
+            ),
+        )
+        self.uhd_usrp_source_0.set_samp_rate(samp_rate)
+        # No synchronization enforced.
+
+        self.uhd_usrp_source_0.set_center_freq(centre_fre, 0)
+        self.uhd_usrp_source_0.set_antenna("TX/RX", 0)
+        self.uhd_usrp_source_0.set_gain(gain, 0)
+        self.uhd_usrp_source_0.set_auto_dc_offset(False, 0)
+        self.uhd_usrp_source_0.set_auto_iq_balance(False, 0)
+        self.uhd_usrp_sink_0_0 = uhd.usrp_sink(
+            ",".join(("serial=31DB555", "")),
+            uhd.stream_args(
+                cpu_format="fc32",
+                args='',
+                channels=list(range(0,1)),
+            ),
+            '',
+        )
+        self.uhd_usrp_sink_0_0.set_samp_rate(samp_rate)
+        self.uhd_usrp_sink_0_0.set_time_unknown_pps(uhd.time_spec(0))
+
+        self.uhd_usrp_sink_0_0.set_center_freq(centre_fre, 0)
+        self.uhd_usrp_sink_0_0.set_antenna("TX/RX", 0)
+        self.uhd_usrp_sink_0_0.set_gain(gain, 0)
+        self.qtgui_time_sink_x_0_1_0 = qtgui.time_sink_c(
             1024, #size
             samp_rate, #samp_rate
-            "", #name
+            'Header Scope Plot', #name
             1, #number of inputs
             None # parent
         )
-        self.qtgui_time_sink_x_0.set_update_time(0.10)
-        self.qtgui_time_sink_x_0.set_y_axis(-1, 1)
+        self.qtgui_time_sink_x_0_1_0.set_update_time(0.10)
+        self.qtgui_time_sink_x_0_1_0.set_y_axis(-1, 1)
 
-        self.qtgui_time_sink_x_0.set_y_label('Amplitude', "")
+        self.qtgui_time_sink_x_0_1_0.set_y_label('Amplitude', "")
 
-        self.qtgui_time_sink_x_0.enable_tags(True)
-        self.qtgui_time_sink_x_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
-        self.qtgui_time_sink_x_0.enable_autoscale(False)
-        self.qtgui_time_sink_x_0.enable_grid(False)
-        self.qtgui_time_sink_x_0.enable_axis_labels(True)
-        self.qtgui_time_sink_x_0.enable_control_panel(False)
-        self.qtgui_time_sink_x_0.enable_stem_plot(False)
+        self.qtgui_time_sink_x_0_1_0.enable_tags(True)
+        self.qtgui_time_sink_x_0_1_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.qtgui_time_sink_x_0_1_0.enable_autoscale(True)
+        self.qtgui_time_sink_x_0_1_0.enable_grid(False)
+        self.qtgui_time_sink_x_0_1_0.enable_axis_labels(True)
+        self.qtgui_time_sink_x_0_1_0.enable_control_panel(False)
+        self.qtgui_time_sink_x_0_1_0.enable_stem_plot(False)
 
 
-        labels = ['Signal 1', 'Signal 2', 'Signal 3', 'Signal 4', 'Signal 5',
-            'Signal 6', 'Signal 7', 'Signal 8', 'Signal 9', 'Signal 10']
+        labels = ['Scope Plot', '', '', '', '',
+            '', '', '', '', '']
         widths = [1, 1, 1, 1, 1,
             1, 1, 1, 1, 1]
         colors = ['blue', 'red', 'green', 'black', 'cyan',
@@ -127,19 +162,152 @@ class myconfig(gr.top_block, Qt.QWidget):
         for i in range(2):
             if len(labels[i]) == 0:
                 if (i % 2 == 0):
-                    self.qtgui_time_sink_x_0.set_line_label(i, "Re{{Data {0}}}".format(i/2))
+                    self.qtgui_time_sink_x_0_1_0.set_line_label(i, "Re{{Data {0}}}".format(i/2))
                 else:
-                    self.qtgui_time_sink_x_0.set_line_label(i, "Im{{Data {0}}}".format(i/2))
+                    self.qtgui_time_sink_x_0_1_0.set_line_label(i, "Im{{Data {0}}}".format(i/2))
             else:
-                self.qtgui_time_sink_x_0.set_line_label(i, labels[i])
-            self.qtgui_time_sink_x_0.set_line_width(i, widths[i])
-            self.qtgui_time_sink_x_0.set_line_color(i, colors[i])
-            self.qtgui_time_sink_x_0.set_line_style(i, styles[i])
-            self.qtgui_time_sink_x_0.set_line_marker(i, markers[i])
-            self.qtgui_time_sink_x_0.set_line_alpha(i, alphas[i])
+                self.qtgui_time_sink_x_0_1_0.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_0_1_0.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_0_1_0.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_0_1_0.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_0_1_0.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_0_1_0.set_line_alpha(i, alphas[i])
 
-        self._qtgui_time_sink_x_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0.qwidget(), Qt.QWidget)
-        self.top_layout.addWidget(self._qtgui_time_sink_x_0_win)
+        self._qtgui_time_sink_x_0_1_0_win = sip.wrapinstance(self.qtgui_time_sink_x_0_1_0.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_time_sink_x_0_1_0_win)
+        self.qtgui_time_sink_x_0_1 = qtgui.time_sink_c(
+            1024, #size
+            samp_rate, #samp_rate
+            'Payload Scope Plot', #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_time_sink_x_0_1.set_update_time(0.10)
+        self.qtgui_time_sink_x_0_1.set_y_axis(-1, 1)
+
+        self.qtgui_time_sink_x_0_1.set_y_label('Amplitude', "")
+
+        self.qtgui_time_sink_x_0_1.enable_tags(True)
+        self.qtgui_time_sink_x_0_1.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, 0, "")
+        self.qtgui_time_sink_x_0_1.enable_autoscale(True)
+        self.qtgui_time_sink_x_0_1.enable_grid(False)
+        self.qtgui_time_sink_x_0_1.enable_axis_labels(True)
+        self.qtgui_time_sink_x_0_1.enable_control_panel(False)
+        self.qtgui_time_sink_x_0_1.enable_stem_plot(False)
+
+
+        labels = ['Scope Plot', '', '', '', '',
+            '', '', '', '', '']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ['blue', 'red', 'green', 'black', 'cyan',
+            'magenta', 'yellow', 'dark red', 'dark green', 'dark blue']
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+        styles = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        markers = [-1, -1, -1, -1, -1,
+            -1, -1, -1, -1, -1]
+
+
+        for i in range(2):
+            if len(labels[i]) == 0:
+                if (i % 2 == 0):
+                    self.qtgui_time_sink_x_0_1.set_line_label(i, "Re{{Data {0}}}".format(i/2))
+                else:
+                    self.qtgui_time_sink_x_0_1.set_line_label(i, "Im{{Data {0}}}".format(i/2))
+            else:
+                self.qtgui_time_sink_x_0_1.set_line_label(i, labels[i])
+            self.qtgui_time_sink_x_0_1.set_line_width(i, widths[i])
+            self.qtgui_time_sink_x_0_1.set_line_color(i, colors[i])
+            self.qtgui_time_sink_x_0_1.set_line_style(i, styles[i])
+            self.qtgui_time_sink_x_0_1.set_line_marker(i, markers[i])
+            self.qtgui_time_sink_x_0_1.set_line_alpha(i, alphas[i])
+
+        self._qtgui_time_sink_x_0_1_win = sip.wrapinstance(self.qtgui_time_sink_x_0_1.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_time_sink_x_0_1_win)
+        self.qtgui_const_sink_x_0_0_0_2_1_0 = qtgui.const_sink_c(
+            256, #size
+            "", #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_const_sink_x_0_0_0_2_1_0.set_update_time(0.10)
+        self.qtgui_const_sink_x_0_0_0_2_1_0.set_y_axis((-1.5), 1.5)
+        self.qtgui_const_sink_x_0_0_0_2_1_0.set_x_axis((-1.5), 1.5)
+        self.qtgui_const_sink_x_0_0_0_2_1_0.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, "")
+        self.qtgui_const_sink_x_0_0_0_2_1_0.enable_autoscale(True)
+        self.qtgui_const_sink_x_0_0_0_2_1_0.enable_grid(False)
+        self.qtgui_const_sink_x_0_0_0_2_1_0.enable_axis_labels(True)
+
+
+        labels = ['', '', '', '', '',
+            '', '', '', '', '']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ["blue", "red", "red", "red", "red",
+            "red", "red", "red", "red", "red"]
+        styles = [0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0]
+        markers = [0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0]
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+
+        for i in range(1):
+            if len(labels[i]) == 0:
+                self.qtgui_const_sink_x_0_0_0_2_1_0.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_const_sink_x_0_0_0_2_1_0.set_line_label(i, labels[i])
+            self.qtgui_const_sink_x_0_0_0_2_1_0.set_line_width(i, widths[i])
+            self.qtgui_const_sink_x_0_0_0_2_1_0.set_line_color(i, colors[i])
+            self.qtgui_const_sink_x_0_0_0_2_1_0.set_line_style(i, styles[i])
+            self.qtgui_const_sink_x_0_0_0_2_1_0.set_line_marker(i, markers[i])
+            self.qtgui_const_sink_x_0_0_0_2_1_0.set_line_alpha(i, alphas[i])
+
+        self._qtgui_const_sink_x_0_0_0_2_1_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0_0_0_2_1_0.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_const_sink_x_0_0_0_2_1_0_win)
+        self.qtgui_const_sink_x_0_0_0_2 = qtgui.const_sink_c(
+            256, #size
+            "", #name
+            1, #number of inputs
+            None # parent
+        )
+        self.qtgui_const_sink_x_0_0_0_2.set_update_time(0.10)
+        self.qtgui_const_sink_x_0_0_0_2.set_y_axis((-1.5), 1.5)
+        self.qtgui_const_sink_x_0_0_0_2.set_x_axis((-1.5), 1.5)
+        self.qtgui_const_sink_x_0_0_0_2.set_trigger_mode(qtgui.TRIG_MODE_FREE, qtgui.TRIG_SLOPE_POS, 0.0, 0, "")
+        self.qtgui_const_sink_x_0_0_0_2.enable_autoscale(True)
+        self.qtgui_const_sink_x_0_0_0_2.enable_grid(False)
+        self.qtgui_const_sink_x_0_0_0_2.enable_axis_labels(True)
+
+
+        labels = ['', '', '', '', '',
+            '', '', '', '', '']
+        widths = [1, 1, 1, 1, 1,
+            1, 1, 1, 1, 1]
+        colors = ["blue", "red", "red", "red", "red",
+            "red", "red", "red", "red", "red"]
+        styles = [0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0]
+        markers = [0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0]
+        alphas = [1.0, 1.0, 1.0, 1.0, 1.0,
+            1.0, 1.0, 1.0, 1.0, 1.0]
+
+        for i in range(1):
+            if len(labels[i]) == 0:
+                self.qtgui_const_sink_x_0_0_0_2.set_line_label(i, "Data {0}".format(i))
+            else:
+                self.qtgui_const_sink_x_0_0_0_2.set_line_label(i, labels[i])
+            self.qtgui_const_sink_x_0_0_0_2.set_line_width(i, widths[i])
+            self.qtgui_const_sink_x_0_0_0_2.set_line_color(i, colors[i])
+            self.qtgui_const_sink_x_0_0_0_2.set_line_style(i, styles[i])
+            self.qtgui_const_sink_x_0_0_0_2.set_line_marker(i, markers[i])
+            self.qtgui_const_sink_x_0_0_0_2.set_line_alpha(i, alphas[i])
+
+        self._qtgui_const_sink_x_0_0_0_2_win = sip.wrapinstance(self.qtgui_const_sink_x_0_0_0_2.qwidget(), Qt.QWidget)
+        self.top_layout.addWidget(self._qtgui_const_sink_x_0_0_0_2_win)
         self.qtgui_const_sink_x_0_0 = qtgui.const_sink_c(
             1024, #size
             "", #name
@@ -181,44 +349,99 @@ class myconfig(gr.top_block, Qt.QWidget):
 
         self._qtgui_const_sink_x_0_0_win = sip.wrapinstance(self.qtgui_const_sink_x_0_0.qwidget(), Qt.QWidget)
         self.top_layout.addWidget(self._qtgui_const_sink_x_0_0_win)
+        self.fft_vxx_1 = fft.fft_vcc(fft_len, True, (), True, 1)
         self.fft_vxx_0_0 = fft.fft_vcc(fft_len, False, (), True, 1)
+        self.fft_vxx_0 = fft.fft_vcc(fft_len, True, (), True, 1)
         self.digital_protocol_formatter_bb_0 = digital.protocol_formatter_bb(hdr_format, length_tag_key)
+        self.digital_packet_headerparser_b_0 = digital.packet_headerparser_b(header_formatter.base())
+        self.digital_ofdm_sync_sc_cfb_0 = digital.ofdm_sync_sc_cfb(fft_len, (int(fft_len/4)), False, 0.9)
+        self.digital_ofdm_serializer_vcc_payload = digital.ofdm_serializer_vcc(fft_len, occupied_carriers, length_tag_key1, packet_length_tag_key, 1, '', True)
+        self.digital_ofdm_serializer_vcc_header = digital.ofdm_serializer_vcc(fft_len, occupied_carriers, length_tag_key1, '', 0, '', True)
+        self.digital_ofdm_frame_equalizer_vcvc_1 = digital.ofdm_frame_equalizer_vcvc(payload_equalizer.base(), (int(fft_len/4)), length_tag_key1, True, 0)
+        self.digital_ofdm_frame_equalizer_vcvc_0 = digital.ofdm_frame_equalizer_vcvc(header_equalizer.base(), (int(fft_len/4)), length_tag_key1, True, 1)
         self.digital_ofdm_cyclic_prefixer_0 = digital.ofdm_cyclic_prefixer(
             fft_len,
             fft_len + int(fft_len/4),
             rolloff,
             length_tag_key)
-        self.digital_ofdm_carrier_allocator_cvc_0 = digital.ofdm_carrier_allocator_cvc( fft_len, occupied_carriers, pilot_carriers, pilot_symbols, (sync_word1, sync_word2, sync_word3), length_tag_key, True)
+        self.digital_ofdm_chanest_vcvc_0 = digital.ofdm_chanest_vcvc(sync_word1, sync_word2, 1, 0, 3, False)
+        self.digital_ofdm_carrier_allocator_cvc_0 = digital.ofdm_carrier_allocator_cvc( fft_len, occupied_carriers, pilot_carriers, pilot_symbols, (sync_word1, sync_word2), length_tag_key, True)
+        self.digital_header_payload_demux_0 = digital.header_payload_demux(
+            3,
+            fft_len,
+            (int(fft_len/4)),
+            length_tag_key1,
+            "",
+            True,
+            gr.sizeof_gr_complex,
+            "rx_time",
+            samp_rate,
+            (),
+            0)
+        self.digital_constellation_decoder_cb_1 = digital.constellation_decoder_cb(payload_mod.base())
+        self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(header_mod.base())
         self.digital_chunks_to_symbols_xx_0_0 = digital.chunks_to_symbols_bc(payload_mod.points(), 1)
         self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bc(header_mod.points(), 1)
+        self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, 10000,True)
         self.blocks_tagged_stream_mux_0 = blocks.tagged_stream_mux(gr.sizeof_gr_complex*1, length_tag_key, 0)
         self.blocks_tag_gate_0 = blocks.tag_gate(gr.sizeof_gr_complex * 1, False)
         self.blocks_tag_gate_0.set_single_key("")
+        self.blocks_tag_debug_1 = blocks.tag_debug(gr.sizeof_char*1, 'Rx Bytes', "")
+        self.blocks_tag_debug_1.set_display(True)
         self.blocks_stream_to_tagged_stream_0 = blocks.stream_to_tagged_stream(gr.sizeof_char, 1, packet_len, length_tag_key)
         self.blocks_repack_bits_bb_0_0_0 = blocks.repack_bits_bb(8, 1, length_tag_key, False, gr.GR_LSB_FIRST)
         self.blocks_repack_bits_bb_0_0 = blocks.repack_bits_bb(8, payload_mod.bits_per_symbol(), length_tag_key, False, gr.GR_LSB_FIRST)
+        self.blocks_repack_bits_bb_0 = blocks.repack_bits_bb(payload_mod.bits_per_symbol(), 8, packet_length_tag_key, True, gr.GR_LSB_FIRST)
+        self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(0.053)
+        self.blocks_delay_0 = blocks.delay(gr.sizeof_gr_complex*1, (int(fft_len+fft_len/4)))
         self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 255, 1000))), True)
+        self.analog_frequency_modulator_fc_0 = analog.frequency_modulator_fc((-2.0/fft_len))
 
 
         ##################################################
         # Connections
         ##################################################
+        self.msg_connect((self.digital_packet_headerparser_b_0, 'header_data'), (self.digital_header_payload_demux_0, 'header_data'))
+        self.connect((self.analog_frequency_modulator_fc_0, 0), (self.blocks_multiply_xx_0, 0))
         self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
+        self.connect((self.blocks_delay_0, 0), (self.blocks_multiply_xx_0, 1))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_tag_gate_0, 0))
+        self.connect((self.blocks_multiply_xx_0, 0), (self.digital_header_payload_demux_0, 0))
+        self.connect((self.blocks_repack_bits_bb_0, 0), (self.blocks_tag_debug_1, 0))
         self.connect((self.blocks_repack_bits_bb_0_0, 0), (self.digital_chunks_to_symbols_xx_0_0, 0))
         self.connect((self.blocks_repack_bits_bb_0_0_0, 0), (self.digital_chunks_to_symbols_xx_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.blocks_repack_bits_bb_0_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_protocol_formatter_bb_0, 0))
-        self.connect((self.blocks_tag_gate_0, 0), (self.qtgui_time_sink_x_0, 0))
+        self.connect((self.blocks_tag_gate_0, 0), (self.uhd_usrp_sink_0_0, 0))
         self.connect((self.blocks_tagged_stream_mux_0, 0), (self.digital_ofdm_carrier_allocator_cvc_0, 0))
         self.connect((self.blocks_tagged_stream_mux_0, 0), (self.qtgui_const_sink_x_0_0, 0))
+        self.connect((self.blocks_throttle_0, 0), (self.blocks_delay_0, 0))
+        self.connect((self.blocks_throttle_0, 0), (self.digital_ofdm_sync_sc_cfb_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.blocks_tagged_stream_mux_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0_0, 0), (self.blocks_tagged_stream_mux_0, 1))
+        self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_packet_headerparser_b_0, 0))
+        self.connect((self.digital_constellation_decoder_cb_1, 0), (self.blocks_repack_bits_bb_0, 0))
+        self.connect((self.digital_header_payload_demux_0, 0), (self.fft_vxx_0, 0))
+        self.connect((self.digital_header_payload_demux_0, 1), (self.fft_vxx_1, 0))
         self.connect((self.digital_ofdm_carrier_allocator_cvc_0, 0), (self.fft_vxx_0_0, 0))
+        self.connect((self.digital_ofdm_chanest_vcvc_0, 0), (self.digital_ofdm_frame_equalizer_vcvc_0, 0))
         self.connect((self.digital_ofdm_cyclic_prefixer_0, 0), (self.blocks_multiply_const_vxx_0, 0))
+        self.connect((self.digital_ofdm_frame_equalizer_vcvc_0, 0), (self.digital_ofdm_serializer_vcc_header, 0))
+        self.connect((self.digital_ofdm_frame_equalizer_vcvc_1, 0), (self.digital_ofdm_serializer_vcc_payload, 0))
+        self.connect((self.digital_ofdm_serializer_vcc_header, 0), (self.digital_constellation_decoder_cb_0, 0))
+        self.connect((self.digital_ofdm_serializer_vcc_header, 0), (self.qtgui_const_sink_x_0_0_0_2_1_0, 0))
+        self.connect((self.digital_ofdm_serializer_vcc_header, 0), (self.qtgui_time_sink_x_0_1_0, 0))
+        self.connect((self.digital_ofdm_serializer_vcc_payload, 0), (self.digital_constellation_decoder_cb_1, 0))
+        self.connect((self.digital_ofdm_serializer_vcc_payload, 0), (self.qtgui_const_sink_x_0_0_0_2, 0))
+        self.connect((self.digital_ofdm_serializer_vcc_payload, 0), (self.qtgui_time_sink_x_0_1, 0))
+        self.connect((self.digital_ofdm_sync_sc_cfb_0, 0), (self.analog_frequency_modulator_fc_0, 0))
+        self.connect((self.digital_ofdm_sync_sc_cfb_0, 1), (self.digital_header_payload_demux_0, 1))
         self.connect((self.digital_protocol_formatter_bb_0, 0), (self.blocks_repack_bits_bb_0_0_0, 0))
+        self.connect((self.fft_vxx_0, 0), (self.digital_ofdm_chanest_vcvc_0, 0))
         self.connect((self.fft_vxx_0_0, 0), (self.digital_ofdm_cyclic_prefixer_0, 0))
+        self.connect((self.fft_vxx_1, 0), (self.digital_ofdm_frame_equalizer_vcvc_1, 0))
+        self.connect((self.uhd_usrp_source_0, 0), (self.blocks_throttle_0, 0))
 
 
     def closeEvent(self, event):
@@ -251,6 +474,13 @@ class myconfig(gr.top_block, Qt.QWidget):
     def set_payload_mod(self, payload_mod):
         self.payload_mod = payload_mod
 
+    def get_packet_length_tag_key(self):
+        return self.packet_length_tag_key
+
+    def set_packet_length_tag_key(self, packet_length_tag_key):
+        self.packet_length_tag_key = packet_length_tag_key
+        self.set_header_formatter(digital.packet_header_ofdm(self.occupied_carriers, n_syms=1, len_tag_key=self.packet_length_tag_key, frame_len_tag_key=self.length_tag_key1, bits_per_header_sym=header_mod.bits_per_symbol(), bits_per_payload_sym=payload_mod.bits_per_symbol(), scramble_header=False))
+
     def get_occupied_carriers(self):
         return self.occupied_carriers
 
@@ -258,7 +488,15 @@ class myconfig(gr.top_block, Qt.QWidget):
         self.occupied_carriers = occupied_carriers
         self.set_hdr_format(digital.header_format_ofdm(self.occupied_carriers, 1, self.length_tag_key,))
         self.set_header_equalizer(digital.ofdm_equalizer_simpledfe(self.fft_len, header_mod.base(), self.occupied_carriers, self.pilot_carriers, self.pilot_symbols))
+        self.set_header_formatter(digital.packet_header_ofdm(self.occupied_carriers, n_syms=1, len_tag_key=self.packet_length_tag_key, frame_len_tag_key=self.length_tag_key1, bits_per_header_sym=header_mod.bits_per_symbol(), bits_per_payload_sym=payload_mod.bits_per_symbol(), scramble_header=False))
         self.set_payload_equalizer(digital.ofdm_equalizer_simpledfe(self.fft_len, payload_mod.base(), self.occupied_carriers, self.pilot_carriers, self.pilot_symbols, 1))
+
+    def get_length_tag_key1(self):
+        return self.length_tag_key1
+
+    def set_length_tag_key1(self, length_tag_key1):
+        self.length_tag_key1 = length_tag_key1
+        self.set_header_formatter(digital.packet_header_ofdm(self.occupied_carriers, n_syms=1, len_tag_key=self.packet_length_tag_key, frame_len_tag_key=self.length_tag_key1, bits_per_header_sym=header_mod.bits_per_symbol(), bits_per_payload_sym=payload_mod.bits_per_symbol(), scramble_header=False))
 
     def get_length_tag_key(self):
         return self.length_tag_key
@@ -280,12 +518,8 @@ class myconfig(gr.top_block, Qt.QWidget):
         self.fft_len = fft_len
         self.set_header_equalizer(digital.ofdm_equalizer_simpledfe(self.fft_len, header_mod.base(), self.occupied_carriers, self.pilot_carriers, self.pilot_symbols))
         self.set_payload_equalizer(digital.ofdm_equalizer_simpledfe(self.fft_len, payload_mod.base(), self.occupied_carriers, self.pilot_carriers, self.pilot_symbols, 1))
-
-    def get_sync_word3(self):
-        return self.sync_word3
-
-    def set_sync_word3(self, sync_word3):
-        self.sync_word3 = sync_word3
+        self.analog_frequency_modulator_fc_0.set_sensitivity((-2.0/self.fft_len))
+        self.blocks_delay_0.set_dly(int((int(self.fft_len+self.fft_len/4))))
 
     def get_sync_word2(self):
         return self.sync_word2
@@ -304,7 +538,10 @@ class myconfig(gr.top_block, Qt.QWidget):
 
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
-        self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_0_1.set_samp_rate(self.samp_rate)
+        self.qtgui_time_sink_x_0_1_0.set_samp_rate(self.samp_rate)
+        self.uhd_usrp_sink_0_0.set_samp_rate(self.samp_rate)
+        self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
 
     def get_rolloff(self):
         return self.rolloff
@@ -318,12 +555,6 @@ class myconfig(gr.top_block, Qt.QWidget):
     def set_payload_equalizer(self, payload_equalizer):
         self.payload_equalizer = payload_equalizer
 
-    def get_packet_length_tag_key(self):
-        return self.packet_length_tag_key
-
-    def set_packet_length_tag_key(self, packet_length_tag_key):
-        self.packet_length_tag_key = packet_length_tag_key
-
     def get_packet_len(self):
         return self.packet_len
 
@@ -331,6 +562,12 @@ class myconfig(gr.top_block, Qt.QWidget):
         self.packet_len = packet_len
         self.blocks_stream_to_tagged_stream_0.set_packet_len(self.packet_len)
         self.blocks_stream_to_tagged_stream_0.set_packet_len_pmt(self.packet_len)
+
+    def get_header_formatter(self):
+        return self.header_formatter
+
+    def set_header_formatter(self, header_formatter):
+        self.header_formatter = header_formatter
 
     def get_header_equalizer(self):
         return self.header_equalizer
@@ -350,12 +587,16 @@ class myconfig(gr.top_block, Qt.QWidget):
 
     def set_gain(self, gain):
         self.gain = gain
+        self.uhd_usrp_sink_0_0.set_gain(self.gain, 0)
+        self.uhd_usrp_source_0.set_gain(self.gain, 0)
 
     def get_centre_fre(self):
         return self.centre_fre
 
     def set_centre_fre(self, centre_fre):
         self.centre_fre = centre_fre
+        self.uhd_usrp_sink_0_0.set_center_freq(self.centre_fre, 0)
+        self.uhd_usrp_source_0.set_center_freq(self.centre_fre, 0)
 
 
 

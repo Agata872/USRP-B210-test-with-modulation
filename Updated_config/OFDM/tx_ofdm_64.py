@@ -14,7 +14,7 @@ from gnuradio import qtgui
 from PyQt5 import QtCore
 from gnuradio import analog
 from gnuradio import blocks
-import numpy
+import pmt
 from gnuradio import blocks, gr
 from gnuradio import digital
 from gnuradio import fft
@@ -70,20 +70,22 @@ class tx_ofdm_64(gr.top_block, Qt.QWidget):
         ##################################################
         # Variables
         ##################################################
+        self.pilot_symbols = pilot_symbols = ((1, 1, 1, 1,),)
+        self.pilot_carriers = pilot_carriers = ((-21, -7, 7, 21,),)
         self.payload_mod = payload_mod = digital.constellation_qpsk()
         self.occupied_carriers = occupied_carriers = (list(range(-26, -21)) + list(range(-20, -7)) + list(range(-6, 0)) + list(range(1, 7)) + list(range(8, 21)) + list(range(22, 27)),)
         self.length_tag_key = length_tag_key = "packet_len"
         self.header_mod = header_mod = digital.constellation_bpsk()
+        self.fft_len = fft_len = 64
         self.sync_word2 = sync_word2 = [0, 0, 0, 0, 0, 0, -1, -1, -1, -1, 1, 1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 0, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, -1, -1, -1, -1, 0, 0, 0, 0, 0]
         self.sync_word1 = sync_word1 = [0., 0., 0., 0., 0., 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., -1.41421356, 0., -1.41421356, 0., -1.41421356, 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., -1.41421356, 0., -1.41421356, 0., -1.41421356, 0., -1.41421356, 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., 1.41421356, 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., 1.41421356, 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., 1.41421356, 0., 1.41421356, 0., 0., 0., 0., 0., 0.,0.]
-        self.samp_rate = samp_rate = 1000000
+        self.samp_rate = samp_rate = 250000
         self.rolloff = rolloff = 0
-        self.pilot_symbols = pilot_symbols = ((1, 1, 1, 1,),)
-        self.pilot_carriers = pilot_carriers = ((-21, -7, 7, 21,),)
+        self.payload_equalizer = payload_equalizer = digital.ofdm_equalizer_simpledfe(fft_len, payload_mod.base(), occupied_carriers, pilot_carriers, pilot_symbols, 1)
         self.packet_len = packet_len = 90
         self.header_formatter = header_formatter = digital.packet_header_ofdm(occupied_carriers, n_syms=1, len_tag_key=length_tag_key, frame_len_tag_key=length_tag_key, bits_per_header_sym=header_mod.bits_per_symbol(), bits_per_payload_sym=payload_mod.bits_per_symbol(), scramble_header=False)
+        self.header_equalizer = header_equalizer = digital.ofdm_equalizer_simpledfe(fft_len, header_mod.base(), occupied_carriers, pilot_carriers, pilot_symbols)
         self.gain = gain = 45
-        self.fft_len = fft_len = 64
         self.center_freq = center_freq = 920e6
 
         ##################################################
@@ -93,21 +95,21 @@ class tx_ofdm_64(gr.top_block, Qt.QWidget):
         self._gain_range = qtgui.Range(0, 100, 1, 45, 200)
         self._gain_win = qtgui.RangeWidget(self._gain_range, self.set_gain, "'gain'", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._gain_win)
-        self.uhd_usrp_sink_0 = uhd.usrp_sink(
-            ",".join(("serial=31DB555", '')),
+        self.uhd_usrp_sink_0_0 = uhd.usrp_sink(
+            ",".join(("serial=31DB555", "")),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',
                 channels=list(range(0,1)),
             ),
-            "",
+            '',
         )
-        self.uhd_usrp_sink_0.set_samp_rate(samp_rate)
-        self.uhd_usrp_sink_0.set_time_unknown_pps(uhd.time_spec(0))
+        self.uhd_usrp_sink_0_0.set_samp_rate(samp_rate)
+        self.uhd_usrp_sink_0_0.set_time_unknown_pps(uhd.time_spec(0))
 
-        self.uhd_usrp_sink_0.set_center_freq(center_freq, 0)
-        self.uhd_usrp_sink_0.set_antenna("TX/RX", 0)
-        self.uhd_usrp_sink_0.set_gain(gain, 0)
+        self.uhd_usrp_sink_0_0.set_center_freq(center_freq, 0)
+        self.uhd_usrp_sink_0_0.set_antenna("TX/RX", 0)
+        self.uhd_usrp_sink_0_0.set_gain(gain, 0)
         self.qtgui_time_sink_x_0 = qtgui.time_sink_c(
             1024, #size
             samp_rate, #samp_rate
@@ -221,8 +223,11 @@ class tx_ofdm_64(gr.top_block, Qt.QWidget):
         self.blocks_probe_rate_0 = blocks.probe_rate(gr.sizeof_gr_complex*1, 500.0, 0.15, '')
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(0.05)
         self.blocks_message_debug_0 = blocks.message_debug(True, gr.log_levels.info)
+        self.blocks_file_source_2 = blocks.file_source(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\OFDM\\hello.txt', True, 0, 0)
+        self.blocks_file_source_2.set_begin_tag(pmt.PMT_NIL)
+        self.blocks_file_sink_0_0 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\OFDM\\tx.bin', False)
+        self.blocks_file_sink_0_0.set_unbuffered(False)
         self.blocks_add_xx_0 = blocks.add_vcc(1)
-        self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 256, 10000000))), True)
         self.analog_noise_source_x_0 = analog.noise_source_c(analog.GR_GAUSSIAN, 0.02, 0)
 
 
@@ -232,9 +237,10 @@ class tx_ofdm_64(gr.top_block, Qt.QWidget):
         self.msg_connect((self.blocks_probe_rate_0, 'rate'), (self.blocks_message_debug_0, 'print'))
         self.msg_connect((self.digital_probe_mpsk_snr_est_c_0, 'snr'), (self.blocks_message_debug_0, 'log'))
         self.connect((self.analog_noise_source_x_0, 0), (self.blocks_add_xx_0, 1))
-        self.connect((self.analog_random_source_x_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.digital_probe_mpsk_snr_est_c_0, 0))
-        self.connect((self.blocks_add_xx_0, 0), (self.uhd_usrp_sink_0, 0))
+        self.connect((self.blocks_add_xx_0, 0), (self.uhd_usrp_sink_0_0, 0))
+        self.connect((self.blocks_file_source_2, 0), (self.blocks_file_sink_0_0, 0))
+        self.connect((self.blocks_file_source_2, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_tag_gate_0, 0))
         self.connect((self.blocks_repack_bits_bb_0, 0), (self.digital_chunks_to_symbols_xx_0_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_crc32_bb_0, 0))
@@ -261,6 +267,22 @@ class tx_ofdm_64(gr.top_block, Qt.QWidget):
 
         event.accept()
 
+    def get_pilot_symbols(self):
+        return self.pilot_symbols
+
+    def set_pilot_symbols(self, pilot_symbols):
+        self.pilot_symbols = pilot_symbols
+        self.set_header_equalizer(digital.ofdm_equalizer_simpledfe(self.fft_len, header_mod.base(), self.occupied_carriers, self.pilot_carriers, self.pilot_symbols))
+        self.set_payload_equalizer(digital.ofdm_equalizer_simpledfe(self.fft_len, payload_mod.base(), self.occupied_carriers, self.pilot_carriers, self.pilot_symbols, 1))
+
+    def get_pilot_carriers(self):
+        return self.pilot_carriers
+
+    def set_pilot_carriers(self, pilot_carriers):
+        self.pilot_carriers = pilot_carriers
+        self.set_header_equalizer(digital.ofdm_equalizer_simpledfe(self.fft_len, header_mod.base(), self.occupied_carriers, self.pilot_carriers, self.pilot_symbols))
+        self.set_payload_equalizer(digital.ofdm_equalizer_simpledfe(self.fft_len, payload_mod.base(), self.occupied_carriers, self.pilot_carriers, self.pilot_symbols, 1))
+
     def get_payload_mod(self):
         return self.payload_mod
 
@@ -272,7 +294,9 @@ class tx_ofdm_64(gr.top_block, Qt.QWidget):
 
     def set_occupied_carriers(self, occupied_carriers):
         self.occupied_carriers = occupied_carriers
+        self.set_header_equalizer(digital.ofdm_equalizer_simpledfe(self.fft_len, header_mod.base(), self.occupied_carriers, self.pilot_carriers, self.pilot_symbols))
         self.set_header_formatter(digital.packet_header_ofdm(self.occupied_carriers, n_syms=1, len_tag_key=self.length_tag_key, frame_len_tag_key=self.length_tag_key, bits_per_header_sym=header_mod.bits_per_symbol(), bits_per_payload_sym=payload_mod.bits_per_symbol(), scramble_header=False))
+        self.set_payload_equalizer(digital.ofdm_equalizer_simpledfe(self.fft_len, payload_mod.base(), self.occupied_carriers, self.pilot_carriers, self.pilot_symbols, 1))
 
     def get_length_tag_key(self):
         return self.length_tag_key
@@ -286,6 +310,14 @@ class tx_ofdm_64(gr.top_block, Qt.QWidget):
 
     def set_header_mod(self, header_mod):
         self.header_mod = header_mod
+
+    def get_fft_len(self):
+        return self.fft_len
+
+    def set_fft_len(self, fft_len):
+        self.fft_len = fft_len
+        self.set_header_equalizer(digital.ofdm_equalizer_simpledfe(self.fft_len, header_mod.base(), self.occupied_carriers, self.pilot_carriers, self.pilot_symbols))
+        self.set_payload_equalizer(digital.ofdm_equalizer_simpledfe(self.fft_len, payload_mod.base(), self.occupied_carriers, self.pilot_carriers, self.pilot_symbols, 1))
 
     def get_sync_word2(self):
         return self.sync_word2
@@ -306,7 +338,7 @@ class tx_ofdm_64(gr.top_block, Qt.QWidget):
         self.samp_rate = samp_rate
         self.qtgui_freq_sink_x_0.set_frequency_range(self.center_freq, self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
-        self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
+        self.uhd_usrp_sink_0_0.set_samp_rate(self.samp_rate)
 
     def get_rolloff(self):
         return self.rolloff
@@ -314,17 +346,11 @@ class tx_ofdm_64(gr.top_block, Qt.QWidget):
     def set_rolloff(self, rolloff):
         self.rolloff = rolloff
 
-    def get_pilot_symbols(self):
-        return self.pilot_symbols
+    def get_payload_equalizer(self):
+        return self.payload_equalizer
 
-    def set_pilot_symbols(self, pilot_symbols):
-        self.pilot_symbols = pilot_symbols
-
-    def get_pilot_carriers(self):
-        return self.pilot_carriers
-
-    def set_pilot_carriers(self, pilot_carriers):
-        self.pilot_carriers = pilot_carriers
+    def set_payload_equalizer(self, payload_equalizer):
+        self.payload_equalizer = payload_equalizer
 
     def get_packet_len(self):
         return self.packet_len
@@ -340,18 +366,18 @@ class tx_ofdm_64(gr.top_block, Qt.QWidget):
     def set_header_formatter(self, header_formatter):
         self.header_formatter = header_formatter
 
+    def get_header_equalizer(self):
+        return self.header_equalizer
+
+    def set_header_equalizer(self, header_equalizer):
+        self.header_equalizer = header_equalizer
+
     def get_gain(self):
         return self.gain
 
     def set_gain(self, gain):
         self.gain = gain
-        self.uhd_usrp_sink_0.set_gain(self.gain, 0)
-
-    def get_fft_len(self):
-        return self.fft_len
-
-    def set_fft_len(self, fft_len):
-        self.fft_len = fft_len
+        self.uhd_usrp_sink_0_0.set_gain(self.gain, 0)
 
     def get_center_freq(self):
         return self.center_freq
@@ -359,7 +385,7 @@ class tx_ofdm_64(gr.top_block, Qt.QWidget):
     def set_center_freq(self, center_freq):
         self.center_freq = center_freq
         self.qtgui_freq_sink_x_0.set_frequency_range(self.center_freq, self.samp_rate)
-        self.uhd_usrp_sink_0.set_center_freq(self.center_freq, 0)
+        self.uhd_usrp_sink_0_0.set_center_freq(self.center_freq, 0)
 
 
 
