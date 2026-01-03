@@ -81,13 +81,13 @@ class qpsk_TxRx(gr.top_block, Qt.QWidget):
         self.rs_ratio = rs_ratio = 1.040
         self.rrc_taps = rrc_taps = firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), 0.35, 11*sps*nfilts)
         self.phase_bw = phase_bw = 0.0628
-        self.packet_len = packet_len = 90
+        self.packet_len = packet_len = 96
         self.length_tag_key = length_tag_key = 'packet_len'
         self.hdr_format = hdr_format = digital.header_format_default(access_key, 1)
         self.gain = gain = 55
         self.excess_bw = excess_bw = 0.35
         self.eq_gain = eq_gain = 0.01
-        self.const = const = 0.08
+        self.const = const = 0.1
         self.center_freq = center_freq = 920e6
         self.arity = arity = 4
 
@@ -139,7 +139,7 @@ class qpsk_TxRx(gr.top_block, Qt.QWidget):
         self._gain_range = qtgui.Range(0, 100, 1, 55, 200)
         self._gain_win = qtgui.RangeWidget(self._gain_range, self.set_gain, "'gain'", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._gain_win)
-        self._const_range = qtgui.Range(0, 1, 0.01, 0.08, 200)
+        self._const_range = qtgui.Range(0, 1, 0.01, 0.1, 200)
         self._const_win = qtgui.RangeWidget(self._const_range, self.set_const, "'const'", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._const_win)
         self.uhd_usrp_source_0_0 = uhd.usrp_source(
@@ -464,14 +464,12 @@ class qpsk_TxRx(gr.top_block, Qt.QWidget):
         self.blocks_probe_rate_0 = blocks.probe_rate(gr.sizeof_gr_complex*1, 500.0, 0.15, '')
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(const)
         self.blocks_message_debug_0 = blocks.message_debug(True, gr.log_levels.info)
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\lena_Tx.jpeg', False, 0, 0)
-        self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
-        self.blocks_file_sink_0_0_0_0 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\image.jpg', False)
-        self.blocks_file_sink_0_0_0_0.set_unbuffered(False)
+        self.blocks_file_source_0_0 = blocks.file_source(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\hello.txt', True, 0, 0)
+        self.blocks_file_source_0_0.set_begin_tag(pmt.PMT_NIL)
         self.blocks_file_sink_0_0_0 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\rx.bin', False)
         self.blocks_file_sink_0_0_0.set_unbuffered(False)
         self.blocks_file_sink_0_0 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\tx.bin', False)
-        self.blocks_file_sink_0_0.set_unbuffered(True)
+        self.blocks_file_sink_0_0.set_unbuffered(False)
         self.blocks_char_to_float_0_0 = blocks.char_to_float(1, 1)
         self.blocks_char_to_float_0 = blocks.char_to_float(1, 1)
         self.blocks_add_xx_0 = blocks.add_vcc(1)
@@ -488,8 +486,8 @@ class qpsk_TxRx(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_add_xx_0, 0), (self.uhd_usrp_sink_0_0, 0))
         self.connect((self.blocks_char_to_float_0, 0), (self.qtgui_time_sink_x_0_0, 0))
         self.connect((self.blocks_char_to_float_0_0, 0), (self.qtgui_time_sink_x_0_0_0, 0))
-        self.connect((self.blocks_file_source_0, 0), (self.blocks_file_sink_0_0, 0))
-        self.connect((self.blocks_file_source_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
+        self.connect((self.blocks_file_source_0_0, 0), (self.blocks_file_sink_0_0, 0))
+        self.connect((self.blocks_file_source_0_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_add_xx_0, 0))
         self.connect((self.blocks_repack_bits_bb_0, 0), (self.blocks_char_to_float_0_0, 0))
         self.connect((self.blocks_repack_bits_bb_0, 0), (self.digital_crc32_bb_0_0, 0))
@@ -506,7 +504,6 @@ class qpsk_TxRx(gr.top_block, Qt.QWidget):
         self.connect((self.digital_crc32_bb_0, 0), (self.blocks_tagged_stream_mux_0, 1))
         self.connect((self.digital_crc32_bb_0, 0), (self.digital_protocol_formatter_bb_0, 0))
         self.connect((self.digital_crc32_bb_0_0, 0), (self.blocks_file_sink_0_0_0, 0))
-        self.connect((self.digital_crc32_bb_0_0, 0), (self.blocks_file_sink_0_0_0_0, 0))
         self.connect((self.digital_diff_decoder_bb_0, 0), (self.digital_map_bb_0, 0))
         self.connect((self.digital_linear_equalizer_0, 0), (self.digital_costas_loop_cc_0, 0))
         self.connect((self.digital_map_bb_0, 0), (self.blocks_unpack_k_bits_bb_0, 0))

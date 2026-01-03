@@ -232,7 +232,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '250000'
+    value: '200000'
   states:
     bus_sink: false
     bus_source: false

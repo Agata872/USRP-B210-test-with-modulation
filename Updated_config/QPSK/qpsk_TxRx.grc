@@ -81,7 +81,7 @@ blocks:
     start: '0'
     step: '0.01'
     stop: '1'
-    value: '0.08'
+    value: '0.1'
     widget: counter_slider
   states:
     bus_sink: false
@@ -184,7 +184,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '90'
+    value: '96'
   states:
     bus_sink: false
     bus_source: false
@@ -399,13 +399,13 @@ blocks:
     comment: ''
     file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\QPSK\tx.bin
     type: byte
-    unbuffered: 'True'
+    unbuffered: 'False'
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 372.0]
+    coordinate: [616, 388.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0_0
@@ -435,7 +435,7 @@ blocks:
     comment: ''
     file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\QPSK\image.jpg
     type: byte
-    unbuffered: 'False'
+    unbuffered: 'True'
     vlen: '1'
   states:
     bus_sink: false
@@ -443,27 +443,27 @@ blocks:
     bus_structure: null
     coordinate: [1832, 1492.0]
     rotation: 0
-    state: enabled
-- name: blocks_file_source_0
+    state: disabled
+- name: blocks_file_source_0_0
   id: blocks_file_source
   parameters:
     affinity: ''
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\QPSK\lena_Tx.jpeg
+    file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\QPSK\hello.txt
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
     offset: '0'
-    repeat: 'False'
+    repeat: 'True'
     type: byte
     vlen: '1'
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [24, 228.0]
+    coordinate: [32, 396.0]
     rotation: 0
     state: enabled
 - name: blocks_message_debug_0
@@ -496,7 +496,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [728, 468.0]
+    coordinate: [744, 548.0]
     rotation: 0
     state: enabled
 - name: blocks_probe_rate_0
@@ -555,7 +555,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 248.0]
+    coordinate: [320, 240.0]
     rotation: 0
     state: enabled
 - name: blocks_tag_gate_0
@@ -594,7 +594,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1400, 340.0]
+    coordinate: [1296, 348.0]
     rotation: 0
     state: enabled
 - name: blocks_unpack_k_bits_bb_0
@@ -737,7 +737,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [776, 252.0]
+    coordinate: [656, 220.0]
     rotation: 0
     state: true
 - name: digital_crc32_bb_0_0
@@ -849,7 +849,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1088, 248.0]
+    coordinate: [1392, 184.0]
     rotation: 0
     state: enabled
 - name: note_0
@@ -871,6 +871,27 @@ blocks:
     coordinate: [176, 1628.0]
     rotation: 0
     state: true
+- name: paint_image_source_0
+  id: paint_image_source
+  parameters:
+    affinity: ''
+    alias: ''
+    autocontrast: '0'
+    bt709_map: '1'
+    comment: ''
+    image_file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\QPSK\lena_Tx.jpeg
+    image_flip: '0'
+    image_invert: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    repeatmode: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [40, 192.0]
+    rotation: 0
+    state: disabled
 - name: qtgui_const_sink_x_0
   id: qtgui_const_sink_x
   parameters:
@@ -2200,7 +2221,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1784, 244.0]
+    coordinate: [1864, 252.0]
     rotation: 0
     state: true
 - name: virtual_source_0
@@ -2225,8 +2246,8 @@ connections:
 - [blocks_add_xx_0, '0', uhd_usrp_sink_0_0, '0']
 - [blocks_char_to_float_0, '0', qtgui_time_sink_x_0_0, '0']
 - [blocks_char_to_float_0_0, '0', qtgui_time_sink_x_0_0_0, '0']
-- [blocks_file_source_0, '0', blocks_file_sink_0_0, '0']
-- [blocks_file_source_0, '0', blocks_stream_to_tagged_stream_0, '0']
+- [blocks_file_source_0_0, '0', blocks_file_sink_0_0, '0']
+- [blocks_file_source_0_0, '0', blocks_stream_to_tagged_stream_0, '0']
 - [blocks_multiply_const_vxx_0, '0', blocks_add_xx_0, '0']
 - [blocks_probe_rate_0, rate, blocks_message_debug_0, print]
 - [blocks_repack_bits_bb_0, '0', blocks_char_to_float_0_0, '0']
@@ -2250,6 +2271,8 @@ connections:
 - [digital_map_bb_0, '0', blocks_unpack_k_bits_bb_0, '0']
 - [digital_pfb_clock_sync_xxx_0, '0', digital_linear_equalizer_0, '0']
 - [digital_protocol_formatter_bb_0, '0', blocks_tagged_stream_mux_0, '0']
+- [paint_image_source_0, '0', blocks_file_sink_0_0, '0']
+- [paint_image_source_0, '0', blocks_stream_to_tagged_stream_0, '0']
 - [uhd_usrp_source_0_0, '0', digital_pfb_clock_sync_xxx_0, '0']
 - [uhd_usrp_source_0_0, '0', qtgui_time_sink_x_1, '0']
 - [virtual_source_0, '0', digital_constellation_modulator_0, '0']

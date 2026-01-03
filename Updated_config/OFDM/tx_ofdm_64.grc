@@ -231,7 +231,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '250000'
+    value: '200000'
   states:
     bus_sink: false
     bus_source: false
@@ -352,7 +352,7 @@ blocks:
     comment: ''
     file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\OFDM\tx.bin
     type: byte
-    unbuffered: 'False'
+    unbuffered: 'True'
     vlen: '1'
   states:
     bus_sink: false

@@ -78,7 +78,7 @@ class MIMO_tx(gr.top_block, Qt.QWidget):
         self.fft_len = fft_len = 64
         self.sync_word2 = sync_word2 = [0, 0, 0, 0, 0, 0, -1, -1, -1, -1, 1, 1, -1, -1, -1, 1, -1, 1, 1, 1, 1, 1, -1, -1, -1, -1, -1, 1, -1, -1, 1, -1, 0, 1, -1, 1, 1, 1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, 1, -1, -1, -1, 1, -1, 1, -1, -1, -1, -1, 0, 0, 0, 0, 0]
         self.sync_word1 = sync_word1 = [0., 0., 0., 0., 0., 0., 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., -1.41421356, 0., -1.41421356, 0., -1.41421356, 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., -1.41421356, 0., -1.41421356, 0., -1.41421356, 0., -1.41421356, 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., 1.41421356, 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., 1.41421356, 0., 1.41421356, 0., -1.41421356, 0., 1.41421356, 0., 1.41421356, 0., 1.41421356, 0., 0., 0., 0., 0., 0.]
-        self.samp_rate = samp_rate = 250000
+        self.samp_rate = samp_rate = 200000
         self.rolloff = rolloff = 0
         self.payload_equalizer = payload_equalizer = digital.ofdm_equalizer_simpledfe(fft_len, payload_mod.base(), occupied_carriers, pilot_carriers, pilot_symbols, 1)
         self.packet_len = packet_len = 96
@@ -167,7 +167,7 @@ class MIMO_tx(gr.top_block, Qt.QWidget):
         self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(0.053)
         self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\hello.txt', True, 0, 0)
         self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
-        self.blocks_file_sink_0_0 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\tx.bin', False)
+        self.blocks_file_sink_0_0 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\OFDM\\tx.bin', False)
         self.blocks_file_sink_0_0.set_unbuffered(True)
 
 
