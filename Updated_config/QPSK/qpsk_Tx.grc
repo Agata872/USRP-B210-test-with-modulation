@@ -255,7 +255,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [424, 372.0]
+    coordinate: [392, 396.0]
     rotation: 0
     state: enabled
 - name: blocks_file_source_0
@@ -265,7 +265,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\QPSK\hello.txt
+    file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\QPSK\tx_raw.bin
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -310,7 +310,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [728, 468.0]
+    coordinate: [776, 500.0]
     rotation: 0
     state: enabled
 - name: blocks_probe_rate_0
@@ -349,7 +349,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [400, 248.0]
+    coordinate: [360, 256.0]
     rotation: 0
     state: enabled
 - name: blocks_tag_gate_0
@@ -445,7 +445,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1088, 248.0]
+    coordinate: [1144, 192.0]
     rotation: 0
     state: enabled
 - name: qtgui_const_sink_x_0

@@ -409,7 +409,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1208, 884.0]
+    coordinate: [1192, 940.0]
     rotation: 0
     state: enabled
 - name: blocks_file_sink_0_0
@@ -427,7 +427,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1664, 676.0]
+    coordinate: [1704, 692.0]
     rotation: 0
     state: enabled
 - name: blocks_repack_bits_bb_0
@@ -568,7 +568,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1360, 684.0]
+    coordinate: [1360, 692.0]
     rotation: 0
     state: enabled
 - name: digital_diff_decoder_bb_0
@@ -950,7 +950,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1440, 860.0]
+    coordinate: [1536, 924.0]
     rotation: 0
     state: enabled
 - name: qtgui_time_sink_x_1
