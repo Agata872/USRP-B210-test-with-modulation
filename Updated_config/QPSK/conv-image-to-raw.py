@@ -4,7 +4,7 @@ import numpy as np
 H = W = 512
 
 # 1) 读图 + 灰度 + resize
-img = Image.open("shannon.jpg").convert("L").resize((W, H))
+img = Image.open("shannon.png").convert("L").resize((W, H))
 
 # 2) 转成连续 bytes（row-major）
 payload = np.array(img, dtype=np.uint8).flatten()

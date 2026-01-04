@@ -4,7 +4,7 @@ from PIL import Image
 H = W = 512
 preamble = bytes([0xDE, 0xAD, 0xBE, 0xEF]) * 8
 
-data = open("tx.bin", "rb").read()
+data = open("tx_raw.bin", "rb").read()
 pos = data.find(preamble)
 if pos == -1:
     raise RuntimeError("没找到 preamble：可能接收端没收到完整同步头，或你TX没发带preamble的文件")
