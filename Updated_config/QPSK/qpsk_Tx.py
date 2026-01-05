@@ -70,7 +70,7 @@ class qpsk_Tx(gr.top_block, Qt.QWidget):
         ##################################################
         self.access_key = access_key = '11100001010110101110100010010011'
         self.sps = sps = 4
-        self.samp_rate = samp_rate = 250000
+        self.samp_rate = samp_rate = 200000
         self.rs_ratio = rs_ratio = 1.040
         self.qpsk = qpsk = digital.constellation_qpsk().base()
         self.qpsk.set_npwr(1)

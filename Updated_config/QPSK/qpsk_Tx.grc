@@ -183,7 +183,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '250000'
+    value: '200000'
   states:
     bus_sink: false
     bus_source: false
@@ -219,7 +219,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [760, 740.0]
+    coordinate: [712, 732.0]
     rotation: 0
     state: enabled
 - name: blocks_add_xx_0
