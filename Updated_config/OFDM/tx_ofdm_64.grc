@@ -69,7 +69,7 @@ blocks:
     start: '0'
     step: '1'
     stop: '100'
-    value: '50'
+    value: '55'
     widget: counter_slider
   states:
     bus_sink: false
@@ -231,7 +231,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '200000'
+    value: '250000'
   states:
     bus_sink: false
     bus_source: false
@@ -358,9 +358,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [280, 284.0]
+    coordinate: [312, 308.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_file_source_0
   id: blocks_file_source
   parameters:
@@ -380,7 +380,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [16, 44.0]
+    coordinate: [16, 100.0]
     rotation: 0
     state: disabled
 - name: blocks_file_source_1
@@ -402,7 +402,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [40, 188.0]
+    coordinate: [0, 140.0]
     rotation: 0
     state: disabled
 - name: blocks_file_source_2
@@ -412,7 +412,7 @@ blocks:
     alias: ''
     begin_tag: pmt.PMT_NIL
     comment: ''
-    file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\OFDM\hello.txt
+    file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\OFDM\tx_raw.bin
     length: '0'
     maxoutbuf: '0'
     minoutbuf: '0'
@@ -424,7 +424,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [0, 124.0]
+    coordinate: [32, 172.0]
     rotation: 0
     state: enabled
 - name: blocks_float_to_char_0
@@ -592,7 +592,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [0, 196.0]
+    coordinate: [32, 180.0]
     rotation: 0
     state: disabled
 - name: digital_chunks_to_symbols_xx_0
@@ -1377,7 +1377,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [8, 356.0]
+    coordinate: [32, 340.0]
     rotation: 0
     state: enabled
 - name: virtual_source_0_0
@@ -1472,4 +1472,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.12.0
+  grc_version: 3.10.10.0

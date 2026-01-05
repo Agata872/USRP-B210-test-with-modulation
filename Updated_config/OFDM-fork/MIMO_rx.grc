@@ -61,7 +61,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '50'
+    value: '55'
   states:
     bus_sink: false
     bus_source: false
@@ -328,7 +328,7 @@ blocks:
     alias: ''
     append: 'False'
     comment: ''
-    file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\OFDM\rx.bin
+    file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\OFDM-fork\rx.bin
     type: byte
     unbuffered: 'False'
     vlen: '1'
@@ -1530,4 +1530,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.12.0
+  grc_version: 3.10.10.0

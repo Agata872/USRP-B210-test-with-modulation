@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: MIMO_rx
-# GNU Radio version: 3.10.12.0
+# GNU Radio version: 3.10.10.0
 
 from PyQt5 import Qt
 from gnuradio import qtgui
@@ -26,7 +26,6 @@ from gnuradio import eng_notation
 from gnuradio import uhd
 import time
 import sip
-import threading
 
 
 
@@ -53,7 +52,7 @@ class MIMO_rx(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "MIMO_rx")
+        self.settings = Qt.QSettings("GNU Radio", "MIMO_rx")
 
         try:
             geometry = self.settings.value("geometry")
@@ -61,7 +60,6 @@ class MIMO_rx(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
-        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
@@ -84,7 +82,7 @@ class MIMO_rx(gr.top_block, Qt.QWidget):
         self.header_formatter = header_formatter = digital.packet_header_ofdm(occupied_carriers, n_syms=1, len_tag_key=packet_length_tag_key, frame_len_tag_key=length_tag_key1, bits_per_header_sym=header_mod.bits_per_symbol(), bits_per_payload_sym=payload_mod.bits_per_symbol(), scramble_header=False)
         self.header_equalizer = header_equalizer = digital.ofdm_equalizer_simpledfe(fft_len, header_mod.base(), occupied_carriers, pilot_carriers, pilot_symbols)
         self.hdr_format = hdr_format = digital.header_format_ofdm(occupied_carriers, 1, length_tag_key,)
-        self.gain = gain = 50
+        self.gain = gain = 55
         self.centre_freq = centre_freq = 920e6
 
         ##################################################
@@ -319,7 +317,7 @@ class MIMO_rx(gr.top_block, Qt.QWidget):
         self.blocks_tag_debug_1.set_display(True)
         self.blocks_repack_bits_bb_0 = blocks.repack_bits_bb(payload_mod.bits_per_symbol(), 8, packet_length_tag_key, True, gr.GR_LSB_FIRST)
         self.blocks_multiply_xx_0 = blocks.multiply_vcc(1)
-        self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\OFDM\\rx.bin', False)
+        self.blocks_file_sink_1 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\OFDM-fork\\rx.bin', False)
         self.blocks_file_sink_1.set_unbuffered(False)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_gr_complex*1, (int(fft_len+fft_len/4)))
         self.analog_frequency_modulator_fc_0 = analog.frequency_modulator_fc((-2.0/fft_len))
@@ -357,7 +355,7 @@ class MIMO_rx(gr.top_block, Qt.QWidget):
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "MIMO_rx")
+        self.settings = Qt.QSettings("GNU Radio", "MIMO_rx")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -514,7 +512,6 @@ def main(top_block_cls=MIMO_rx, options=None):
     tb = top_block_cls()
 
     tb.start()
-    tb.flowgraph_started.set()
 
     tb.show()
 
