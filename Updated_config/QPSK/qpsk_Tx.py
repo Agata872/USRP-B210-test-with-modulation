@@ -8,7 +8,7 @@
 # Title: qpsk_Tx.grc
 # Author: Shuang
 # Description: packet transmit
-# GNU Radio version: 3.10.12.0
+# GNU Radio version: 3.10.10.0
 
 from PyQt5 import Qt
 from gnuradio import qtgui
@@ -30,7 +30,6 @@ from gnuradio import eng_notation
 from gnuradio import uhd
 import time
 import sip
-import threading
 
 
 
@@ -57,7 +56,7 @@ class qpsk_Tx(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "qpsk_Tx")
+        self.settings = Qt.QSettings("GNU Radio", "qpsk_Tx")
 
         try:
             geometry = self.settings.value("geometry")
@@ -65,7 +64,6 @@ class qpsk_Tx(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
-        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
@@ -184,8 +182,6 @@ class qpsk_Tx(gr.top_block, Qt.QWidget):
         self.blocks_message_debug_0 = blocks.message_debug(True, gr.log_levels.info)
         self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\tx_raw.bin', True, 0, 0)
         self.blocks_file_source_0.set_begin_tag(pmt.PMT_NIL)
-        self.blocks_file_sink_0_0 = blocks.file_sink(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\tx.bin', False)
-        self.blocks_file_sink_0_0.set_unbuffered(True)
         self.blocks_add_xx_0 = blocks.add_vcc(1)
         self.analog_noise_source_x_0 = analog.noise_source_c(analog.GR_GAUSSIAN, 0.00, 0)
 
@@ -198,7 +194,6 @@ class qpsk_Tx(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_add_xx_0, 0), (self.blocks_probe_rate_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.qtgui_time_sink_x_0, 0))
         self.connect((self.blocks_add_xx_0, 0), (self.uhd_usrp_sink_0_0, 0))
-        self.connect((self.blocks_file_source_0, 0), (self.blocks_file_sink_0_0, 0))
         self.connect((self.blocks_file_source_0, 0), (self.blocks_stream_to_tagged_stream_0, 0))
         self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_add_xx_0, 0))
         self.connect((self.blocks_stream_to_tagged_stream_0, 0), (self.digital_crc32_bb_0, 0))
@@ -211,7 +206,7 @@ class qpsk_Tx(gr.top_block, Qt.QWidget):
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "qpsk_Tx")
+        self.settings = Qt.QSettings("GNU Radio", "qpsk_Tx")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -309,7 +304,6 @@ def main(top_block_cls=qpsk_Tx, options=None):
     tb = top_block_cls()
 
     tb.start()
-    tb.flowgraph_started.set()
 
     tb.show()
 

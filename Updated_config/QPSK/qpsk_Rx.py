@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: qpsk_Rx.grc
-# GNU Radio version: 3.10.12.0
+# GNU Radio version: 3.10.10.0
 
 from PyQt5 import Qt
 from gnuradio import qtgui
@@ -25,7 +25,6 @@ from gnuradio import eng_notation
 from gnuradio import uhd
 import time
 import sip
-import threading
 
 
 
@@ -52,7 +51,7 @@ class qpsk_Rx(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "qpsk_Rx")
+        self.settings = Qt.QSettings("GNU Radio", "qpsk_Rx")
 
         try:
             geometry = self.settings.value("geometry")
@@ -60,7 +59,6 @@ class qpsk_Rx(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
-        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
@@ -76,7 +74,7 @@ class qpsk_Rx(gr.top_block, Qt.QWidget):
         self.rrc_taps = rrc_taps = firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), 0.35, 11*sps*nfilts)
         self.phase_bw = phase_bw = 0.0628
         self.packet_len = packet_len = 90
-        self.gain = gain = 50
+        self.gain = gain = 55
         self.excess_bw = excess_bw = 0.35
         self.eq_gain = eq_gain = 0.01
         self.center_freq = center_freq = 920e6
@@ -128,7 +126,7 @@ class qpsk_Rx(gr.top_block, Qt.QWidget):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(2, 3):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self._gain_range = qtgui.Range(0, 100, 1, 50, 200)
+        self._gain_range = qtgui.Range(0, 100, 1, 55, 200)
         self._gain_win = qtgui.RangeWidget(self._gain_range, self.set_gain, "'gain'", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._gain_win)
         self.uhd_usrp_source_0_0 = uhd.usrp_source(
@@ -394,7 +392,7 @@ class qpsk_Rx(gr.top_block, Qt.QWidget):
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "qpsk_Rx")
+        self.settings = Qt.QSettings("GNU Radio", "qpsk_Rx")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -519,7 +517,6 @@ def main(top_block_cls=qpsk_Rx, options=None):
     tb = top_block_cls()
 
     tb.start()
-    tb.flowgraph_started.set()
 
     tb.show()
 
