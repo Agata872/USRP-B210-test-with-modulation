@@ -6,17 +6,16 @@
 #
 # GNU Radio Python Flow Graph
 # Title: BPSK_software_simplex
-# GNU Radio version: 3.10.12.0
+# GNU Radio version: 3.10.10.0
 
 from PyQt5 import Qt
 from gnuradio import qtgui
 from PyQt5 import QtCore
 from gnuradio import blocks
 import numpy
-from gnuradio import channels
-from gnuradio.filter import firdes
 from gnuradio import digital
 from gnuradio import gr
+from gnuradio.filter import firdes
 from gnuradio.fft import window
 import sys
 import signal
@@ -24,9 +23,10 @@ from PyQt5 import Qt
 from argparse import ArgumentParser
 from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
+from gnuradio import uhd
+import time
 from gnuradio.filter import pfb
 import sip
-import threading
 
 
 
@@ -53,7 +53,7 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "BPSK_software_simplex")
+        self.settings = Qt.QSettings("GNU Radio", "BPSK_software_simplex")
 
         try:
             geometry = self.settings.value("geometry")
@@ -61,7 +61,6 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
-        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
@@ -75,15 +74,15 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.timing_loop_bw = timing_loop_bw = 6.28/200
         self.taps_0 = taps_0 = [0.9,0,0,0,0.436]
         self.taps = taps = [0.825,0,0,0.526]
-        self.samp_rate = samp_rate = 500e3*6
+        self.samp_rate = samp_rate = 250000
         self.rrc_taps_tx = rrc_taps_tx = firdes.root_raised_cosine(nfilts, nfilts, 1.0, excess_bw, 11*sps*nfilts)
         self.rrc_taps = rrc_taps = firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), excess_bw, 11*sps*nfilts)
         self.phase_bw = phase_bw = 6.28/200
         self.noise_volt = noise_volt = 0
-        self.gain_tx = gain_tx = 30
-        self.gain_rx = gain_rx = 30
+        self.gain_tx = gain_tx = 50
+        self.gain_rx = gain_rx = 50
         self.freq_offset = freq_offset = 0
-        self.freq = freq = 1e9
+        self.freq = freq = 920000000
         self.filt_delay = filt_delay = int(1+(taps_per_filt-1)//2)
         self.delay = delay = 29
         self.d = d = 1/(2**(1/2))
@@ -123,20 +122,20 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
             self.controls_grid_layout_1.setRowStretch(r, 1)
         for c in range(1, 2):
             self.controls_grid_layout_1.setColumnStretch(c, 1)
-        self._noise_volt_range = qtgui.Range(0, 2, 0.01, 0, 200)
-        self._noise_volt_win = qtgui.RangeWidget(self._noise_volt_range, self.set_noise_volt, "Noise Voltage", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.controls_grid_layout_0.addWidget(self._noise_volt_win, 1, 0, 1, 1)
-        for r in range(1, 2):
+        self._gain_tx_range = qtgui.Range(0, 74, 1, 50, 200)
+        self._gain_tx_win = qtgui.RangeWidget(self._gain_tx_range, self.set_gain_tx, "gain_tx", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.controls_grid_layout_0.addWidget(self._gain_tx_win, 0, 0, 1, 1)
+        for r in range(0, 1):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(0, 1):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self._freq_offset_range = qtgui.Range(-0.1, 0.1, 0.001, 0, 200)
-        self._freq_offset_win = qtgui.RangeWidget(self._freq_offset_range, self.set_freq_offset, "Frequency Offset", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.controls_grid_layout_0.addWidget(self._freq_offset_win, 1, 1, 1, 1)
-        for r in range(1, 2):
-            self.controls_grid_layout_0.setRowStretch(r, 1)
-        for c in range(1, 2):
-            self.controls_grid_layout_0.setColumnStretch(c, 1)
+        self._gain_rx_range = qtgui.Range(0, 74, 1, 50, 200)
+        self._gain_rx_win = qtgui.RangeWidget(self._gain_rx_range, self.set_gain_rx, "gain_rx", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.controls_grid_layout_1.addWidget(self._gain_rx_win, 0, 0, 1, 1)
+        for r in range(0, 1):
+            self.controls_grid_layout_1.setRowStretch(r, 1)
+        for c in range(0, 1):
+            self.controls_grid_layout_1.setColumnStretch(c, 1)
         self._delay_range = qtgui.Range(0, 200, 1, 29, 200)
         self._delay_win = qtgui.RangeWidget(self._delay_range, self.set_delay, "Delay", "counter_slider", int, QtCore.Qt.Horizontal)
         self.controls_grid_layout_0.addWidget(self._delay_win, 0, 1, 1, 1)
@@ -144,6 +143,37 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(1, 2):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
+        self.uhd_usrp_source_0_0 = uhd.usrp_source(
+            ",".join(("serial=31DB53A", "")),
+            uhd.stream_args(
+                cpu_format="fc32",
+                args='',
+                channels=list(range(0,1)),
+            ),
+        )
+        self.uhd_usrp_source_0_0.set_samp_rate(samp_rate)
+        # No synchronization enforced.
+
+        self.uhd_usrp_source_0_0.set_center_freq(freq, 0)
+        self.uhd_usrp_source_0_0.set_antenna("TX/RX", 0)
+        self.uhd_usrp_source_0_0.set_gain(gain_rx, 0)
+        self.uhd_usrp_source_0_0.set_auto_dc_offset(False, 0)
+        self.uhd_usrp_source_0_0.set_auto_iq_balance(False, 0)
+        self.uhd_usrp_sink_0_0 = uhd.usrp_sink(
+            ",".join(("serial=31DB5AB", "")),
+            uhd.stream_args(
+                cpu_format="fc32",
+                args='',
+                channels=list(range(0,1)),
+            ),
+            '',
+        )
+        self.uhd_usrp_sink_0_0.set_samp_rate(samp_rate)
+        self.uhd_usrp_sink_0_0.set_time_unknown_pps(uhd.time_spec(0))
+
+        self.uhd_usrp_sink_0_0.set_center_freq(freq, 0)
+        self.uhd_usrp_sink_0_0.set_antenna("TX/RX", 0)
+        self.uhd_usrp_sink_0_0.set_gain(gain_tx, 0)
         self.qtgui_time_sink_x_1 = qtgui.time_sink_c(
             1024, #size
             samp_rate, #samp_rate
@@ -353,20 +383,20 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
             flt_size=nfilts,
             atten=100)
         self.pfb_arb_resampler_xxx_0.declare_sample_delay(0)
-        self._gain_tx_range = qtgui.Range(0, 74, 1, 30, 200)
-        self._gain_tx_win = qtgui.RangeWidget(self._gain_tx_range, self.set_gain_tx, "gain_tx", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.controls_grid_layout_0.addWidget(self._gain_tx_win, 0, 0, 1, 1)
-        for r in range(0, 1):
+        self._noise_volt_range = qtgui.Range(0, 2, 0.01, 0, 200)
+        self._noise_volt_win = qtgui.RangeWidget(self._noise_volt_range, self.set_noise_volt, "Noise Voltage", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.controls_grid_layout_0.addWidget(self._noise_volt_win, 1, 0, 1, 1)
+        for r in range(1, 2):
             self.controls_grid_layout_0.setRowStretch(r, 1)
         for c in range(0, 1):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
-        self._gain_rx_range = qtgui.Range(0, 74, 1, 30, 200)
-        self._gain_rx_win = qtgui.RangeWidget(self._gain_rx_range, self.set_gain_rx, "gain_rx", "counter_slider", float, QtCore.Qt.Horizontal)
-        self.controls_grid_layout_1.addWidget(self._gain_rx_win, 0, 0, 1, 1)
-        for r in range(0, 1):
-            self.controls_grid_layout_1.setRowStretch(r, 1)
-        for c in range(0, 1):
-            self.controls_grid_layout_1.setColumnStretch(c, 1)
+        self._freq_offset_range = qtgui.Range(-0.1, 0.1, 0.001, 0, 200)
+        self._freq_offset_win = qtgui.RangeWidget(self._freq_offset_range, self.set_freq_offset, "Frequency Offset", "counter_slider", float, QtCore.Qt.Horizontal)
+        self.controls_grid_layout_0.addWidget(self._freq_offset_win, 1, 1, 1, 1)
+        for r in range(1, 2):
+            self.controls_grid_layout_0.setRowStretch(r, 1)
+        for c in range(1, 2):
+            self.controls_grid_layout_0.setColumnStretch(c, 1)
         self._eq_gain_range = qtgui.Range(0.0, 0.001, 0.0001, 0.0001, 200)
         self._eq_gain_win = qtgui.RangeWidget(self._eq_gain_range, self.set_eq_gain, "Equalizer: rate", "counter_slider", float, QtCore.Qt.Horizontal)
         self.controls_grid_layout_1.addWidget(self._eq_gain_win, 1, 0, 1, 1)
@@ -381,13 +411,6 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(phase_bw, arity, False)
         self.digital_constellation_decoder_cb_0 = digital.constellation_decoder_cb(digital.constellation_bpsk().base())
         self.digital_chunks_to_symbols_xx_0 = digital.chunks_to_symbols_bc(digital.constellation_bpsk().points(), 1)
-        self.channels_channel_model_0 = channels.channel_model(
-            noise_voltage=noise_volt,
-            frequency_offset=freq_offset,
-            epsilon=1,
-            taps=taps_0,
-            noise_seed=0,
-            block_tags=False)
         self.blocks_unpack_k_bits_bb_0_0 = blocks.unpack_k_bits_bb(8)
         self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(1)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
@@ -411,12 +434,8 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_delay_0, 0), (self.blocks_char_to_float_0_0_0, 0))
         self.connect((self.blocks_moving_average_xx_0, 0), (self.qtgui_number_sink_0, 0))
         self.connect((self.blocks_packed_to_unpacked_xx_0, 0), (self.digital_diff_encoder_bb_0, 0))
-        self.connect((self.blocks_throttle_0, 0), (self.channels_channel_model_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_char_to_float_0_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0_0, 0), (self.blocks_delay_0, 0))
-        self.connect((self.channels_channel_model_0, 0), (self.blocks_complex_to_mag_0, 0))
-        self.connect((self.channels_channel_model_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
-        self.connect((self.channels_channel_model_0, 0), (self.qtgui_sink_x_1_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
         self.connect((self.digital_constellation_decoder_cb_0, 0), (self.digital_diff_decoder_bb_0_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_constellation_decoder_cb_0, 0))
@@ -427,10 +446,14 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.digital_linear_equalizer_0, 0))
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.qtgui_time_sink_x_1, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.blocks_throttle_0, 0))
+        self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.uhd_usrp_sink_0_0, 0))
+        self.connect((self.uhd_usrp_source_0_0, 0), (self.blocks_complex_to_mag_0, 0))
+        self.connect((self.uhd_usrp_source_0_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
+        self.connect((self.uhd_usrp_source_0_0, 0), (self.qtgui_sink_x_1_0, 0))
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "BPSK_software_simplex")
+        self.settings = Qt.QSettings("GNU Radio", "BPSK_software_simplex")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -495,7 +518,6 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
 
     def set_taps_0(self, taps_0):
         self.taps_0 = taps_0
-        self.channels_channel_model_0.set_taps(self.taps_0)
 
     def get_taps(self):
         return self.taps
@@ -512,6 +534,8 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.qtgui_sink_x_1_0.set_frequency_range(0, self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
         self.qtgui_time_sink_x_1.set_samp_rate(self.samp_rate)
+        self.uhd_usrp_sink_0_0.set_samp_rate(self.samp_rate)
+        self.uhd_usrp_source_0_0.set_samp_rate(self.samp_rate)
 
     def get_rrc_taps_tx(self):
         return self.rrc_taps_tx
@@ -539,32 +563,34 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
 
     def set_noise_volt(self, noise_volt):
         self.noise_volt = noise_volt
-        self.channels_channel_model_0.set_noise_voltage(self.noise_volt)
 
     def get_gain_tx(self):
         return self.gain_tx
 
     def set_gain_tx(self, gain_tx):
         self.gain_tx = gain_tx
+        self.uhd_usrp_sink_0_0.set_gain(self.gain_tx, 0)
 
     def get_gain_rx(self):
         return self.gain_rx
 
     def set_gain_rx(self, gain_rx):
         self.gain_rx = gain_rx
+        self.uhd_usrp_source_0_0.set_gain(self.gain_rx, 0)
 
     def get_freq_offset(self):
         return self.freq_offset
 
     def set_freq_offset(self, freq_offset):
         self.freq_offset = freq_offset
-        self.channels_channel_model_0.set_frequency_offset(self.freq_offset)
 
     def get_freq(self):
         return self.freq
 
     def set_freq(self, freq):
         self.freq = freq
+        self.uhd_usrp_sink_0_0.set_center_freq(self.freq, 0)
+        self.uhd_usrp_source_0_0.set_center_freq(self.freq, 0)
 
     def get_filt_delay(self):
         return self.filt_delay
@@ -601,7 +627,6 @@ def main(top_block_cls=BPSK_software_simplex, options=None):
     tb = top_block_cls()
 
     tb.start()
-    tb.flowgraph_started.set()
 
     tb.show()
 

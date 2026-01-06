@@ -183,7 +183,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: '200000'
+    value: '250000'
   states:
     bus_sink: false
     bus_source: false
@@ -748,7 +748,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"serial=31DB555"'
+    dev_addr: '"serial=31DB5AB"'
     dev_args: '""'
     gain0: gain
     gain1: '0'
