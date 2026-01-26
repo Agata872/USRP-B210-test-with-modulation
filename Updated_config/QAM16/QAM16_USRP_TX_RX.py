@@ -76,7 +76,7 @@ class QAM16_USRP_TX_RX(gr.top_block, Qt.QWidget):
         self.timing_loop_bw_0 = timing_loop_bw_0 = 6.28/200
         self.timing_loop_bw = timing_loop_bw = 6.28/200
         self.taps = taps = [0.85,0,0,0,0.526]
-        self.samp_rate = samp_rate = 1000000
+        self.samp_rate = samp_rate = 250000
         self.rrc_taps_tx = rrc_taps_tx = firdes.root_raised_cosine(nfilts, nfilts, 1.0, excess_bw, 11*sps*nfilts)
         self.rrc_taps = rrc_taps = firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), excess_bw, 11*sps*nfilts)
         self.phase_bw = phase_bw = 6.28/200
@@ -141,7 +141,7 @@ class QAM16_USRP_TX_RX(gr.top_block, Qt.QWidget):
         for c in range(1, 2):
             self.controls_grid_layout_0.setColumnStretch(c, 1)
         self.uhd_usrp_source_0 = uhd.usrp_source(
-            ",".join(("serial=31D4A23", "")),
+            ",".join(("serial=31DB5AB", "")),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',
@@ -157,7 +157,7 @@ class QAM16_USRP_TX_RX(gr.top_block, Qt.QWidget):
         self.uhd_usrp_source_0.set_auto_dc_offset(False, 0)
         self.uhd_usrp_source_0.set_auto_iq_balance(False, 0)
         self.uhd_usrp_sink_0 = uhd.usrp_sink(
-            ",".join(("serial=31DB555", "")),
+            ",".join(("serial=31DB53A", "")),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',
@@ -496,9 +496,9 @@ class QAM16_USRP_TX_RX(gr.top_block, Qt.QWidget):
 
     def set_sps(self, sps):
         self.sps = sps
-        self.pfb_arb_resampler_xxx_0.set_rate(self.sps)
         self.set_rrc_taps(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0/float(self.sps), self.excess_bw, 11*self.sps*self.nfilts))
         self.set_rrc_taps_tx(firdes.root_raised_cosine(self.nfilts, self.nfilts, 1.0, self.excess_bw, 11*self.sps*self.nfilts))
+        self.pfb_arb_resampler_xxx_0.set_rate(self.sps)
 
     def get_pld_const_16qam(self):
         return self.pld_const_16qam
@@ -566,10 +566,10 @@ class QAM16_USRP_TX_RX(gr.top_block, Qt.QWidget):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.qtgui_sink_x_1.set_frequency_range(0, self.samp_rate)
-        self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
-        self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
         self.qtgui_sink_x_1_0.set_frequency_range(0, self.samp_rate)
         self.qtgui_time_sink_x_0.set_samp_rate(self.samp_rate)
+        self.uhd_usrp_sink_0.set_samp_rate(self.samp_rate)
+        self.uhd_usrp_source_0.set_samp_rate(self.samp_rate)
 
     def get_rrc_taps_tx(self):
         return self.rrc_taps_tx

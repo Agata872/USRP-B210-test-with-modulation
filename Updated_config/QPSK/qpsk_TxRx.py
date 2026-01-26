@@ -8,7 +8,7 @@
 # Title: qpsk_TxRx.grc
 # Author: Tianzheng_Miao
 # Description: packet transmit
-# GNU Radio version: 3.10.12.0
+# GNU Radio version: 3.10.10.0
 
 from PyQt5 import Qt
 from gnuradio import qtgui
@@ -30,7 +30,6 @@ from gnuradio import eng_notation
 from gnuradio import uhd
 import time
 import sip
-import threading
 
 
 
@@ -57,7 +56,7 @@ class qpsk_TxRx(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "qpsk_TxRx")
+        self.settings = Qt.QSettings("GNU Radio", "qpsk_TxRx")
 
         try:
             geometry = self.settings.value("geometry")
@@ -65,7 +64,6 @@ class qpsk_TxRx(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
-        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
@@ -143,7 +141,7 @@ class qpsk_TxRx(gr.top_block, Qt.QWidget):
         self._const_win = qtgui.RangeWidget(self._const_range, self.set_const, "'const'", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._const_win)
         self.uhd_usrp_source_0_0 = uhd.usrp_source(
-            ",".join(("serial=31D4A23", "")),
+            ",".join(("serial=31DB5AB", "")),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',
@@ -159,7 +157,7 @@ class qpsk_TxRx(gr.top_block, Qt.QWidget):
         self.uhd_usrp_source_0_0.set_auto_dc_offset(False, 0)
         self.uhd_usrp_source_0_0.set_auto_iq_balance(False, 0)
         self.uhd_usrp_sink_0_0 = uhd.usrp_sink(
-            ",".join(("serial=31DB555", "")),
+            ",".join(("serial=31DB53A", "")),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',
@@ -514,7 +512,7 @@ class qpsk_TxRx(gr.top_block, Qt.QWidget):
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "qpsk_TxRx")
+        self.settings = Qt.QSettings("GNU Radio", "qpsk_TxRx")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -666,7 +664,6 @@ def main(top_block_cls=qpsk_TxRx, options=None):
     tb = top_block_cls()
 
     tb.start()
-    tb.flowgraph_started.set()
 
     tb.show()
 

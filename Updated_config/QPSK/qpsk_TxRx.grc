@@ -1609,7 +1609,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"serial=31DB555"'
+    dev_addr: '"serial=31DB53A"'
     dev_args: '""'
     gain0: gain
     gain1: '0'
@@ -1950,7 +1950,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"serial=31D4A23"'
+    dev_addr: '"serial=31DB5AB"'
     dev_args: '""'
     gain0: gain
     gain1: '0'
@@ -2279,4 +2279,4 @@ connections:
 
 metadata:
   file_format: 1
-  grc_version: 3.10.12.0
+  grc_version: 3.10.10.0

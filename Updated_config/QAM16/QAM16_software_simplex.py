@@ -6,7 +6,7 @@
 #
 # GNU Radio Python Flow Graph
 # Title: QAM16_software_simplex
-# GNU Radio version: 3.10.12.0
+# GNU Radio version: 3.10.10.0
 
 from PyQt5 import Qt
 from gnuradio import qtgui
@@ -26,7 +26,6 @@ from gnuradio.eng_arg import eng_float, intx
 from gnuradio import eng_notation
 from gnuradio.filter import pfb
 import sip
-import threading
 
 
 
@@ -53,7 +52,7 @@ class QAM16_software_simplex(gr.top_block, Qt.QWidget):
         self.top_grid_layout = Qt.QGridLayout()
         self.top_layout.addLayout(self.top_grid_layout)
 
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "QAM16_software_simplex")
+        self.settings = Qt.QSettings("GNU Radio", "QAM16_software_simplex")
 
         try:
             geometry = self.settings.value("geometry")
@@ -61,7 +60,6 @@ class QAM16_software_simplex(gr.top_block, Qt.QWidget):
                 self.restoreGeometry(geometry)
         except BaseException as exc:
             print(f"Qt GUI: Could not restore geometry: {str(exc)}", file=sys.stderr)
-        self.flowgraph_started = threading.Event()
 
         ##################################################
         # Variables
@@ -77,7 +75,7 @@ class QAM16_software_simplex(gr.top_block, Qt.QWidget):
         self.timing_loop_bw_0 = timing_loop_bw_0 = 6.28/200
         self.timing_loop_bw = timing_loop_bw = 6.28/200
         self.taps = taps = [0.85,0,0,0,0.526]
-        self.samp_rate = samp_rate = 3e6
+        self.samp_rate = samp_rate = 250000
         self.rrc_taps_tx = rrc_taps_tx = firdes.root_raised_cosine(nfilts, nfilts, 1.0, excess_bw, 11*sps*nfilts)
         self.rrc_taps = rrc_taps = firdes.root_raised_cosine(nfilts, nfilts, 1.0/float(sps), excess_bw, 11*sps*nfilts)
         self.phase_bw = phase_bw = 6.28/200
@@ -85,7 +83,7 @@ class QAM16_software_simplex(gr.top_block, Qt.QWidget):
         self.gain_tx = gain_tx = 40
         self.gain_rx = gain_rx = 30
         self.freq_offset = freq_offset = 0
-        self.freq = freq = 1e9
+        self.freq = freq = 920e6
         self.delay = delay = 116
         self.const = const = digital.qam_constellation(16,True,digital.mod_codes.GRAY_CODE,False)
         self.arity = arity = 4
@@ -463,7 +461,7 @@ class QAM16_software_simplex(gr.top_block, Qt.QWidget):
 
 
     def closeEvent(self, event):
-        self.settings = Qt.QSettings("gnuradio/flowgraphs", "QAM16_software_simplex")
+        self.settings = Qt.QSettings("GNU Radio", "QAM16_software_simplex")
         self.settings.setValue("geometry", self.saveGeometry())
         self.stop()
         self.wait()
@@ -633,7 +631,6 @@ def main(top_block_cls=QAM16_software_simplex, options=None):
     tb = top_block_cls()
 
     tb.start()
-    tb.flowgraph_started.set()
 
     tb.show()
 

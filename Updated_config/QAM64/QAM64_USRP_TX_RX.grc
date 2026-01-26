@@ -103,7 +103,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 800e6
+    value: 920e6
   states:
     bus_sink: false
     bus_source: false
@@ -256,7 +256,7 @@ blocks:
   id: variable
   parameters:
     comment: ''
-    value: 1e6
+    value: '250000'
   states:
     bus_sink: false
     bus_source: false
@@ -309,6 +309,23 @@ blocks:
     coordinate: [2616, 0.0]
     rotation: 0
     state: enabled
+- name: variable_adaptive_algorithm_0
+  id: variable_adaptive_algorithm
+  parameters:
+    comment: ''
+    cons: digital.qam_constellation(64, True,digital.mod_codes.GRAY_CODE,True).base()
+    delta: '10.0'
+    ffactor: '0.99'
+    modulus: '1'
+    step_size: eq_gain
+    type: cma
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [2000, 1288.0]
+    rotation: 0
+    state: enabled
 - name: x
   id: variable_qtgui_range
   parameters:
@@ -330,44 +347,24 @@ blocks:
     coordinate: [1720, 4.0]
     rotation: 0
     state: true
-- name: TFMv1_energy_scale_0
-  id: TFMv1_energy_scale
+- name: analog_agc_xx_0
+  id: analog_agc_xx
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    eav: '1'
-    init_scale: '1'
-    length: 1e6
+    gain: '1.0'
+    max_gain: '65536'
     maxoutbuf: '0'
     minoutbuf: '0'
+    rate: 1e-4
+    reference: '1.0'
+    type: complex
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [432, 620.0]
-    rotation: 0
-    state: true
-- name: TFMv5_dispersion_probe_0_1_1
-  id: TFMv5_dispersion_probe
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    constellation: '3'
-    length: samp_rate/2
-    length_init: '0'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    th1: '0.001'
-    th2: '0.003'
-    th3: '0.006'
-    th4: '0.01'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [2272, 1044.0]
+    coordinate: [504, 616.0]
     rotation: 0
     state: enabled
 - name: analog_random_source_x_0
@@ -588,24 +585,6 @@ blocks:
     coordinate: [1736, 236.0]
     rotation: 0
     state: true
-- name: blocks_multiply_const_vxx_0_0_0
-  id: blocks_multiply_const_vxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    const: 1/x
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [760, 620.0]
-    rotation: 0
-    state: enabled
 - name: blocks_packed_to_unpacked_xx_0
   id: blocks_packed_to_unpacked_xx
   parameters:
@@ -802,23 +781,25 @@ blocks:
     coordinate: [640, 208.0]
     rotation: 0
     state: enabled
-- name: digital_lms_dd_equalizer_cc_0
-  id: digital_lms_dd_equalizer_cc
+- name: digital_linear_equalizer_0
+  id: digital_linear_equalizer
   parameters:
+    adapt_after_training: 'True'
     affinity: ''
+    alg: variable_adaptive_algorithm_0
     alias: ''
-    cnst: digital.qam_constellation(64, True,digital.mod_codes.GRAY_CODE,True).base()
     comment: ''
     maxoutbuf: '0'
     minoutbuf: '0'
-    mu: eq_gain
     num_taps: '15'
     sps: '2'
+    training_sequence: '[ ]'
+    training_start_tag: corr_est
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [1472, 572.0]
+    coordinate: [1432, 588.0]
     rotation: 0
     state: enabled
 - name: digital_pfb_clock_sync_xxx_0
@@ -1286,7 +1267,7 @@ blocks:
     clock_source6: ''
     clock_source7: ''
     comment: ''
-    dev_addr: '"serial=30F9A69"'
+    dev_addr: '"serial=31DB53A"'
     dev_args: '""'
     gain0: gain_tx
     gain1: '0'
@@ -1627,7 +1608,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"serial=30F9A6B"'
+    dev_addr: '"serial=31DB5AB"'
     dev_args: '""'
     gain0: gain_rx
     gain1: '0'
@@ -1890,8 +1871,8 @@ blocks:
     state: enabled
 
 connections:
-- [TFMv1_energy_scale_0, '0', blocks_complex_to_mag_squared_0, '0']
-- [TFMv1_energy_scale_0, '0', blocks_multiply_const_vxx_0_0_0, '0']
+- [analog_agc_xx_0, '0', blocks_complex_to_mag_squared_0, '0']
+- [analog_agc_xx_0, '0', digital_pfb_clock_sync_xxx_0, '0']
 - [analog_random_source_x_0, '0', blocks_packed_to_unpacked_xx_0, '0']
 - [analog_random_source_x_0, '0', blocks_unpack_k_bits_bb_0_0, '0']
 - [blocks_char_to_float_0_0, '0', qtgui_time_sink_x_0, '0']
@@ -1901,7 +1882,6 @@ connections:
 - [blocks_moving_average_xx_0, '0', qtgui_number_sink_0, '0']
 - [blocks_multiply_const_vxx_0, '0', uhd_usrp_sink_0, '0']
 - [blocks_multiply_const_vxx_0_0, '0', channels_channel_model_0, '0']
-- [blocks_multiply_const_vxx_0_0_0, '0', digital_pfb_clock_sync_xxx_0, '0']
 - [blocks_packed_to_unpacked_xx_0, '0', digital_diff_encoder_bb_0, '0']
 - [blocks_unpack_k_bits_bb_0, '0', blocks_char_to_float_0_0, '0']
 - [blocks_unpack_k_bits_bb_0_0, '0', blocks_delay_0, '0']
@@ -1912,18 +1892,17 @@ connections:
 - [digital_constellation_receiver_cb_0, '1', blocks_file_sink_0, '0']
 - [digital_constellation_receiver_cb_0, '2', blocks_file_sink_0_0, '0']
 - [digital_constellation_receiver_cb_0, '3', blocks_file_sink_0_1, '0']
-- [digital_constellation_receiver_cb_0, '4', TFMv5_dispersion_probe_0_1_1, '0']
 - [digital_constellation_receiver_cb_0, '4', digital_constellation_decoder_cb_0, '0']
 - [digital_constellation_receiver_cb_0, '4', qtgui_const_sink_x_0, '0']
 - [digital_diff_decoder_bb_0_0, '0', blocks_unpack_k_bits_bb_0, '0']
 - [digital_diff_encoder_bb_0, '0', digital_chunks_to_symbols_xx_0, '0']
-- [digital_lms_dd_equalizer_cc_0, '0', digital_constellation_receiver_cb_0, '0']
-- [digital_pfb_clock_sync_xxx_0, '0', digital_lms_dd_equalizer_cc_0, '0']
+- [digital_linear_equalizer_0, '0', digital_constellation_receiver_cb_0, '0']
+- [digital_pfb_clock_sync_xxx_0, '0', digital_linear_equalizer_0, '0']
 - [pfb_arb_resampler_xxx_0, '0', blocks_multiply_const_vxx_0_0, '0']
 - [pfb_arb_resampler_xxx_0, '0', qtgui_sink_x_1, '0']
-- [uhd_usrp_source_0, '0', TFMv1_energy_scale_0, '0']
+- [uhd_usrp_source_0, '0', analog_agc_xx_0, '0']
 - [uhd_usrp_source_0, '0', qtgui_sink_x_1_0, '0']
 
 metadata:
   file_format: 1
-  grc_version: 3.10.12.0
+  grc_version: 3.10.10.0

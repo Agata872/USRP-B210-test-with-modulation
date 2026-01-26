@@ -415,6 +415,7 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.blocks_unpack_k_bits_bb_0 = blocks.unpack_k_bits_bb(1)
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
         self.blocks_packed_to_unpacked_xx_0 = blocks.packed_to_unpacked_bb(1, gr.GR_MSB_FIRST)
+        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(0.4)
         self.blocks_moving_average_xx_0 = blocks.moving_average_ff(10000, 0.0001, 4000, 1)
         self.blocks_delay_0 = blocks.delay(gr.sizeof_char*1, delay)
         self.blocks_complex_to_mag_0 = blocks.complex_to_mag(1)
@@ -433,6 +434,9 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.connect((self.blocks_complex_to_mag_0, 0), (self.blocks_moving_average_xx_0, 0))
         self.connect((self.blocks_delay_0, 0), (self.blocks_char_to_float_0_0_0, 0))
         self.connect((self.blocks_moving_average_xx_0, 0), (self.qtgui_number_sink_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_complex_to_mag_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.qtgui_sink_x_1_0, 0))
         self.connect((self.blocks_packed_to_unpacked_xx_0, 0), (self.digital_diff_encoder_bb_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_char_to_float_0_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0_0, 0), (self.blocks_delay_0, 0))
@@ -447,9 +451,7 @@ class BPSK_software_simplex(gr.top_block, Qt.QWidget):
         self.connect((self.digital_pfb_clock_sync_xxx_0, 0), (self.qtgui_time_sink_x_1, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.blocks_throttle_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.uhd_usrp_sink_0_0, 0))
-        self.connect((self.uhd_usrp_source_0_0, 0), (self.blocks_complex_to_mag_0, 0))
-        self.connect((self.uhd_usrp_source_0_0, 0), (self.digital_pfb_clock_sync_xxx_0, 0))
-        self.connect((self.uhd_usrp_source_0_0, 0), (self.qtgui_sink_x_1_0, 0))
+        self.connect((self.uhd_usrp_source_0_0, 0), (self.blocks_multiply_const_vxx_0, 0))
 
 
     def closeEvent(self, event):
