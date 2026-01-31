@@ -9,6 +9,7 @@
 # Author: Dramco_Tianzheng
 # GNU Radio version: 3.10.10.0
 
+from gnuradio import analog
 from gnuradio import blocks
 from gnuradio import digital
 from gnuradio import filter
@@ -89,20 +90,20 @@ class qpsk_demodulator(gr.top_block):
         self.digital_linear_equalizer_0 = digital.linear_equalizer(15, 2, variable_adaptive_algorithm_0, True, [ ], 'corr_est')
         self.digital_costas_loop_cc_0 = digital.costas_loop_cc(phase_bw, arity, False)
         self.blocks_probe_signal_x_0 = blocks.probe_signal_f()
-        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(3)
         self.blocks_moving_average_xx_0 = blocks.moving_average_ff(500, 0.002, 4000, 1)
+        self.analog_agc_xx_0 = analog.agc_cc((1e-4), 1.0, 1.0, 65536)
 
 
         ##################################################
         # Connections
         ##################################################
+        self.connect((self.analog_agc_xx_0, 0), (self.digital_symbol_sync_xx_0, 0))
         self.connect((self.blocks_moving_average_xx_0, 0), (self.blocks_probe_signal_x_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.digital_symbol_sync_xx_0, 0))
         self.connect((self.digital_costas_loop_cc_0, 0), (self.digital_meas_evm_cc_0, 0))
         self.connect((self.digital_linear_equalizer_0, 0), (self.digital_costas_loop_cc_0, 0))
         self.connect((self.digital_meas_evm_cc_0, 0), (self.blocks_moving_average_xx_0, 0))
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.digital_linear_equalizer_0, 0))
-        self.connect((self.uhd_usrp_source_0, 0), (self.blocks_multiply_const_vxx_0, 0))
+        self.connect((self.uhd_usrp_source_0, 0), (self.analog_agc_xx_0, 0))
 
 
     def get_eq_gain(self):

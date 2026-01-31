@@ -166,6 +166,26 @@ blocks:
     coordinate: [584, 24.0]
     rotation: 0
     state: enabled
+- name: analog_agc_xx_0
+  id: analog_agc_xx
+  parameters:
+    affinity: ''
+    alias: ''
+    comment: ''
+    gain: '1.0'
+    max_gain: '65536'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    rate: 1e-4
+    reference: '1.0'
+    type: complex
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [448, 488.0]
+    rotation: 0
+    state: enabled
 - name: blocks_moving_average_xx_0
   id: blocks_moving_average_xx
   parameters:
@@ -184,24 +204,6 @@ blocks:
     bus_source: false
     bus_structure: null
     coordinate: [2160, 432.0]
-    rotation: 0
-    state: enabled
-- name: blocks_multiply_const_vxx_0
-  id: blocks_multiply_const_vxx
-  parameters:
-    affinity: ''
-    alias: ''
-    comment: ''
-    const: '3'
-    maxoutbuf: '0'
-    minoutbuf: '0'
-    type: complex
-    vlen: '1'
-  states:
-    bus_sink: false
-    bus_source: false
-    bus_structure: null
-    coordinate: [448, 508.0]
     rotation: 0
     state: enabled
 - name: blocks_probe_signal_x_0
@@ -790,13 +792,13 @@ blocks:
     state: enabled
 
 connections:
+- [analog_agc_xx_0, '0', digital_symbol_sync_xx_0, '0']
 - [blocks_moving_average_xx_0, '0', blocks_probe_signal_x_0, '0']
-- [blocks_multiply_const_vxx_0, '0', digital_symbol_sync_xx_0, '0']
 - [digital_costas_loop_cc_0, '0', digital_meas_evm_cc_0, '0']
 - [digital_linear_equalizer_0, '0', digital_costas_loop_cc_0, '0']
 - [digital_meas_evm_cc_0, '0', blocks_moving_average_xx_0, '0']
 - [digital_symbol_sync_xx_0, '0', digital_linear_equalizer_0, '0']
-- [uhd_usrp_source_0, '0', blocks_multiply_const_vxx_0, '0']
+- [uhd_usrp_source_0, '0', analog_agc_xx_0, '0']
 
 metadata:
   file_format: 1

@@ -93,7 +93,7 @@ class rx_ofdm_64(gr.top_block, Qt.QWidget):
         self._gain_win = qtgui.RangeWidget(self._gain_range, self.set_gain, "'gain'", "counter_slider", float, QtCore.Qt.Horizontal)
         self.top_layout.addWidget(self._gain_win)
         self.uhd_usrp_source_0_0 = uhd.usrp_source(
-            ",".join(("serial=31D4A23", "")),
+            ",".join(("serial=31DB5AB", "")),
             uhd.stream_args(
                 cpu_format="fc32",
                 args='',

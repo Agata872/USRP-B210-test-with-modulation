@@ -382,24 +382,24 @@ blocks:
     coordinate: [2336, 8.0]
     rotation: 0
     state: enabled
-- name: analog_random_source_x_0
-  id: analog_random_source_x
+- name: analog_agc_xx_0
+  id: analog_agc_xx
   parameters:
     affinity: ''
     alias: ''
     comment: ''
-    max: '256'
+    gain: '1.0'
+    max_gain: '65536'
     maxoutbuf: '0'
-    min: '0'
     minoutbuf: '0'
-    num_samps: '10000000'
-    repeat: 'False'
-    type: byte
+    rate: 1e-4
+    reference: '1.0'
+    type: complex
   states:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [88, 496.0]
+    coordinate: [448, 880.0]
     rotation: 0
     state: enabled
 - name: blocks_char_to_float_0_0
@@ -527,9 +527,31 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2200, 180.0]
+    coordinate: [2088, 188.0]
     rotation: 0
     state: disabled
+- name: blocks_file_source_1
+  id: blocks_file_source
+  parameters:
+    affinity: ''
+    alias: ''
+    begin_tag: pmt.PMT_NIL
+    comment: ''
+    file: D:\Documents\Pycharm_Files\USRP-B210-test-with-modulation\Updated_config\QPSK\tx2.bin
+    length: '0'
+    maxoutbuf: '0'
+    minoutbuf: '0'
+    offset: '0'
+    repeat: 'True'
+    type: byte
+    vlen: '1'
+  states:
+    bus_sink: false
+    bus_source: false
+    bus_structure: null
+    coordinate: [88, 452.0]
+    rotation: 0
+    state: enabled
 - name: blocks_moving_average_xx_0
   id: blocks_moving_average_xx
   parameters:
@@ -585,9 +607,9 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [448, 892.0]
+    coordinate: [424, 780.0]
     rotation: 0
-    state: enabled
+    state: disabled
 - name: blocks_null_sink_0
   id: blocks_null_sink
   parameters:
@@ -1569,7 +1591,7 @@ blocks:
     bus_sink: false
     bus_source: false
     bus_structure: null
-    coordinate: [2816, 376.0]
+    coordinate: [2096, 376.0]
     rotation: 0
     state: enabled
 - name: uhd_usrp_source_0
@@ -2010,14 +2032,17 @@ blocks:
     state: enabled
 
 connections:
-- [analog_random_source_x_0, '0', blocks_packed_to_unpacked_xx_0, '0']
-- [analog_random_source_x_0, '0', blocks_unpack_k_bits_bb_0_0, '0']
+- [analog_agc_xx_0, '0', blocks_complex_to_mag_squared_0, '0']
+- [analog_agc_xx_0, '0', digital_symbol_sync_xx_0, '0']
+- [analog_agc_xx_0, '0', qtgui_sink_x_1_0, '0']
 - [blocks_char_to_float_0_0, '0', blocks_null_sink_0, '0']
 - [blocks_char_to_float_0_0, '0', qtgui_time_sink_x_0, '0']
 - [blocks_char_to_float_0_0_0, '0', qtgui_time_sink_x_0, '1']
 - [blocks_complex_to_mag_squared_0, '0', blocks_moving_average_xx_0, '0']
 - [blocks_delay_0, '0', blocks_char_to_float_0_0_0, '0']
 - [blocks_file_source_0, '0', uhd_usrp_sink_0, '0']
+- [blocks_file_source_1, '0', blocks_packed_to_unpacked_xx_0, '0']
+- [blocks_file_source_1, '0', blocks_unpack_k_bits_bb_0_0, '0']
 - [blocks_moving_average_xx_0, '0', qtgui_number_sink_0, '0']
 - [blocks_moving_average_xx_0_0, '0', qtgui_number_sink_1, '0']
 - [blocks_multiply_const_vxx_0, '0', blocks_complex_to_mag_squared_0, '0']
@@ -2043,6 +2068,7 @@ connections:
 - [pfb_arb_resampler_xxx_0, '0', channels_channel_model_0, '0']
 - [pfb_arb_resampler_xxx_0, '0', qtgui_sink_x_1, '0']
 - [pfb_arb_resampler_xxx_0, '0', uhd_usrp_sink_0, '0']
+- [uhd_usrp_source_0, '0', analog_agc_xx_0, '0']
 - [uhd_usrp_source_0, '0', blocks_multiply_const_vxx_0, '0']
 
 metadata:

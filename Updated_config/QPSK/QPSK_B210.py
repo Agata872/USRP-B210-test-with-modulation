@@ -12,8 +12,9 @@
 from PyQt5 import Qt
 from gnuradio import qtgui
 from PyQt5 import QtCore
+from gnuradio import analog
 from gnuradio import blocks
-import numpy
+import pmt
 from gnuradio import digital
 from gnuradio import filter
 from gnuradio import gr
@@ -376,25 +377,26 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
         self.blocks_tag_debug_0.set_display(True)
         self.blocks_packed_to_unpacked_xx_0 = blocks.packed_to_unpacked_bb(2, gr.GR_LSB_FIRST)
         self.blocks_null_sink_0 = blocks.null_sink(gr.sizeof_float*1)
-        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_cc(3.5)
         self.blocks_moving_average_xx_0_0 = blocks.moving_average_ff(500, 0.002, 4000, 1)
         self.blocks_moving_average_xx_0 = blocks.moving_average_ff(10000, 0.0001, 4000, 1)
+        self.blocks_file_source_1 = blocks.file_source(gr.sizeof_char*1, 'D:\\Documents\\Pycharm_Files\\USRP-B210-test-with-modulation\\Updated_config\\QPSK\\tx2.bin', True, 0, 0)
+        self.blocks_file_source_1.set_begin_tag(pmt.PMT_NIL)
         self.blocks_complex_to_mag_squared_0 = blocks.complex_to_mag_squared(1)
         self.blocks_char_to_float_0_0 = blocks.char_to_float(1, 1)
-        self.analog_random_source_x_0 = blocks.vector_source_b(list(map(int, numpy.random.randint(0, 256, 10000000))), False)
+        self.analog_agc_xx_0 = analog.agc_cc((1e-4), 1.0, 1.0, 65536)
 
 
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.analog_random_source_x_0, 0), (self.blocks_packed_to_unpacked_xx_0, 0))
+        self.connect((self.analog_agc_xx_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
+        self.connect((self.analog_agc_xx_0, 0), (self.digital_symbol_sync_xx_0, 0))
+        self.connect((self.analog_agc_xx_0, 0), (self.qtgui_sink_x_1_0, 0))
         self.connect((self.blocks_char_to_float_0_0, 0), (self.blocks_null_sink_0, 0))
         self.connect((self.blocks_complex_to_mag_squared_0, 0), (self.blocks_moving_average_xx_0, 0))
+        self.connect((self.blocks_file_source_1, 0), (self.blocks_packed_to_unpacked_xx_0, 0))
         self.connect((self.blocks_moving_average_xx_0, 0), (self.qtgui_number_sink_0, 0))
         self.connect((self.blocks_moving_average_xx_0_0, 0), (self.qtgui_number_sink_1, 0))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_complex_to_mag_squared_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.digital_symbol_sync_xx_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.qtgui_sink_x_1_0, 0))
         self.connect((self.blocks_packed_to_unpacked_xx_0, 0), (self.digital_diff_encoder_bb_0, 0))
         self.connect((self.blocks_unpack_k_bits_bb_0, 0), (self.blocks_char_to_float_0_0, 0))
         self.connect((self.digital_chunks_to_symbols_xx_0, 0), (self.pfb_arb_resampler_xxx_0, 0))
@@ -411,7 +413,7 @@ class QPSK_B210(gr.top_block, Qt.QWidget):
         self.connect((self.digital_symbol_sync_xx_0, 0), (self.digital_linear_equalizer_0, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.qtgui_sink_x_1, 0))
         self.connect((self.pfb_arb_resampler_xxx_0, 0), (self.uhd_usrp_sink_0, 0))
-        self.connect((self.uhd_usrp_source_0, 0), (self.blocks_multiply_const_vxx_0, 0))
+        self.connect((self.uhd_usrp_source_0, 0), (self.analog_agc_xx_0, 0))
 
 
     def closeEvent(self, event):

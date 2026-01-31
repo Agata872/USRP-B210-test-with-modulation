@@ -1120,7 +1120,7 @@ blocks:
     dc_offs_enb7: default
     dc_offs_enb8: default
     dc_offs_enb9: default
-    dev_addr: '"serial=31D4A23"'
+    dev_addr: '"serial=31DB5AB"'
     dev_args: '""'
     gain0: gain
     gain1: '0'
